@@ -1,4 +1,5 @@
 // Tela de dashboard do aplicativo de fitness
+
 import React from "react";
 import { View, Text } from "react-native";
 import { globalStyles } from "../theme/globalStyles";

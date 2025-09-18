@@ -16,7 +16,10 @@ import foodsData from "../data/foods.json";
 import { globalStyles } from "../theme/globalStyles";
 import { colors, spacing, fontSizes } from "../theme/theme";
 import { useNutritionStore } from "../store/useNutritionStore";
+import DailySummary from "../components/summary/DailySummary";
 import type { Food, Meal, DailyMeals, NutritionStackParamList } from "../types";
+
+
 
 const Stack = createNativeStackNavigator<NutritionStackParamList>();
 
@@ -50,6 +53,7 @@ function NutritionHomeScreen({ navigation }: any) {
 
   const getCurrentMeals = (): Meal[] =>
     dailyMeals[currentDate] || getDefaultMeals();
+  
 
   const handleMealPress = (meal: Meal) => {
     navigation.navigate("MealDetails", { meal, date: currentDate });
@@ -70,6 +74,7 @@ function NutritionHomeScreen({ navigation }: any) {
   return (
     <View style={globalStyles.container}>
       <Text style={globalStyles.title}>Nutrição</Text>
+      <DailySummary meals={getCurrentMeals()} />
 
       <View style={styles.dateNavigation}>
         <TouchableOpacity
