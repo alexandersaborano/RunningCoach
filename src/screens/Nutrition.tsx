@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -6,20 +6,15 @@ import {
   Button,
   StyleSheet,
   TouchableOpacity,
-  Modal,
 } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import MealCard from "../components/cards/MealCard";
 import MealDetailsScreen from "./MealDetailsScreen";
-import SelectMealModal from "../components/modals/SelectMealModal";
-import foodsData from "../data/foods.json";
+import DailySummary from "../components/summary/DailySummary";
 import { globalStyles } from "../theme/globalStyles";
 import { colors, spacing, fontSizes } from "../theme/theme";
 import { useNutritionStore } from "../store/useNutritionStore";
-import DailySummary from "../components/summary/DailySummary";
-import type { Food, Meal, DailyMeals, NutritionStackParamList } from "../types";
-
-
+import type { Meal, NutritionStackParamList } from "../types";
 
 const Stack = createNativeStackNavigator<NutritionStackParamList>();
 
@@ -43,24 +38,13 @@ const formatDateForDisplay = (dateString: string): string => {
 };
 
 function NutritionHomeScreen({ navigation }: any) {
-  const {
-    dailyMeals,
-    currentDate,
-    setCurrentDate,
-    addFood,
-  } = useNutritionStore();
-  const [selectMealVisible, setSelectMealVisible] = useState(false);
+  const { dailyMeals, currentDate, setCurrentDate } = useNutritionStore();
 
   const getCurrentMeals = (): Meal[] =>
     dailyMeals[currentDate] || getDefaultMeals();
-  
 
   const handleMealPress = (meal: Meal) => {
     navigation.navigate("MealDetails", { meal, date: currentDate });
-  };
-
-  const handleAddFoodToMeal = (mealId: string, food: Food) => {
-    addFood(currentDate, mealId, food);
   };
 
   const changeDate = (days: number) => {
@@ -73,7 +57,8 @@ function NutritionHomeScreen({ navigation }: any) {
 
   return (
     <View style={globalStyles.container}>
-      <Text style={globalStyles.title}>Nutrição</Text>
+      {/*<Text style={globalStyles.title}>Nutrição</Text>*/}
+
       <DailySummary meals={getCurrentMeals()} />
 
       <View style={styles.dateNavigation}>
@@ -105,23 +90,8 @@ function NutritionHomeScreen({ navigation }: any) {
         data={getCurrentMeals()}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <MealCard meal={item} onPress={() => handleMealPress(item)} />
+          <MealCard meal={item} onPressDetails={() => handleMealPress(item)} />
         )}
-      />
-
-      <Button
-        title="Adicionar Alimento"
-        onPress={() => setSelectMealVisible(true)}
-      />
-
-      <SelectMealModal
-        visible={selectMealVisible}
-        meals={getCurrentMeals()}
-        onSelectMeal={(mealId) => {
-          setSelectMealVisible(false);
-        }}
-        onClose={() => setSelectMealVisible(false)}
-        onAddFood={handleAddFoodToMeal}
       />
     </View>
   );
@@ -181,3 +151,4 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
+// Tela principal de nutrição com resumo diário, navegação de data e lista de refeições

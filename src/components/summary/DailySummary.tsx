@@ -31,20 +31,18 @@ export default function DailySummary({ meals }: Props) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.card,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    alignItems: "center"
+    borderRadius: radius.sm,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.sm,
+    flexDirection: "row",
+    justifyContent: "space-around",
   },
   title: {
-    fontSize: fontSizes.large,
-    fontWeight: "bold",
-    color: colors.text,
-    marginBottom: spacing.sm,
+    display: "none", // esconder título para economizar espaço
   },
   totals: {
-    fontSize: fontSizes.normal,
+    fontSize: fontSizes.small,
     color: colors.text,
-    marginBottom: spacing.xs,
   },
 });
