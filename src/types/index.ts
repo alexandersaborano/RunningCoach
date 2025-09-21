@@ -25,4 +25,5 @@ export type NutritionStackParamList = {
   NutritionHome: undefined;
   MealDetails: { meal: Meal; date: string };
   AddFood: { mealId: string; date: string };
+  UserSettings: undefined;
 };

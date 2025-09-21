@@ -3,14 +3,16 @@ import {
   View,
   Text,
   FlatList,
-  Button,
   StyleSheet,
   TouchableOpacity,
+  Button,
 } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import MealCard from "../components/cards/MealCard";
 import MealDetailsScreen from "./MealDetailsScreen";
+import UserSettingsScreen from "./UserSettingsScreen";
 import DailySummary from "../components/summary/DailySummary";
+import UserMacrosGoals from "../components/UserMacrosGoals";
 import { globalStyles } from "../theme/globalStyles";
 import { colors, spacing, fontSizes } from "../theme/theme";
 import { useNutritionStore } from "../store/useNutritionStore";
@@ -57,11 +59,8 @@ function NutritionHomeScreen({ navigation }: any) {
 
   return (
     <View style={globalStyles.container}>
-      {/*<Text style={globalStyles.title}>Nutrição</Text>*/}
-
-      <DailySummary meals={getCurrentMeals()} />
-
-      <View style={styles.dateNavigation}>
+      <Text style={globalStyles.title}>Nutrição</Text>
+<View style={styles.dateNavigation}>
         <TouchableOpacity
           style={styles.dateButton}
           onPress={() => changeDate(-1)}
@@ -86,6 +85,11 @@ function NutritionHomeScreen({ navigation }: any) {
         </TouchableOpacity>
       </View>
 
+      <DailySummary meals={getCurrentMeals()} />
+<UserMacrosGoals />
+
+      
+
       <FlatList
         data={getCurrentMeals()}
         keyExtractor={(item) => item.id}
@@ -100,15 +104,29 @@ function NutritionHomeScreen({ navigation }: any) {
 export default function Nutrition() {
   return (
     <Stack.Navigator initialRouteName="NutritionHome">
+      
       <Stack.Screen
         name="NutritionHome"
         component={NutritionHomeScreen}
-        options={{ title: "Nutrição" }}
+        options={({ navigation }) => ({
+          title: "Nutrição",
+          headerRight: () => (
+            <Button
+              title="Configurações"
+              onPress={() => navigation.navigate("UserSettings")}
+            />
+          ),
+        })}
       />
       <Stack.Screen
         name="MealDetails"
         component={MealDetailsScreen}
         options={{ title: "Detalhes da Refeição" }}
+      />
+      <Stack.Screen
+        name="UserSettings"
+        component={UserSettingsScreen}
+        options={{ title: "Configurações Nutrição" }}
       />
     </Stack.Navigator>
   );
@@ -151,4 +169,3 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
-// Tela principal de nutrição com resumo diário, navegação de data e lista de refeições

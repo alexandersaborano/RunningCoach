@@ -1,26 +1,322 @@
 [
   {
     "id": "1",
-    "name": "Peito de Frango",
-    "calories": 165,
-    "protein": 31,
-    "carbs": 0,
-    "fat": 3.6
+    "name": "Abacate",
+    "calories": 183,
+    "protein": 1.1,
+    "carbs": 2.3,
+    "fat": 17.4
   },
   {
     "id": "2",
-    "name": "Arroz Branco",
-    "calories": 130,
-    "protein": 2.7,
-    "carbs": 28,
-    "fat": 0.3
+    "name": "Água Ananas",
+    "calories": 42,
+    "protein": 0.5,
+    "carbs": 9.5,
+    "fat": 0.2
   },
   {
     "id": "3",
-    "name": "Brócolis",
-    "calories": 55,
-    "protein": 3.7,
-    "carbs": 11.2,
+    "name": "Arroz",
+    "calories": 133,
+    "protein": 2.5,
+    "carbs": 28.0,
+    "fat": 0.3
+  },
+  {
+    "id": "4",
+    "name": "Atum em lata (água)",
+    "calories": 106,
+    "protein": 25.0,
+    "carbs": 0,
+    "fat": 0.5
+  },
+  {
+    "id": "5",
+    "name": "Aveia",
+    "calories": 331,
+    "protein": 13.0,
+    "carbs": 56.0,
+    "fat": 7.8
+  },
+  {
+    "id": "6",
+    "name": "Bananas",
+    "calories": 99,
+    "protein": 1.6,
+    "carbs": 21.8,
+    "fat": 0.4
+  },
+  {
+    "id": "7",
+    "name": "Batata Branca",
+    "calories": 86,
+    "protein": 2.4,
+    "carbs": 18.5,
+    "fat": 0.1
+  },
+  {
+    "id": "8",
+    "name": "Batata Doce",
+    "calories": 121,
+    "protein": 1.0,
+    "carbs": 28.3,
+    "fat": 0.3
+  },
+  {
+    "id": "9",
+    "name": "Café caju",
+    "calories": 390,
+    "protein": 23.0,
+    "carbs": 18.2,
+    "fat": 48.8
+  },
+  {
+    "id": "10",
+    "name": "Caramel Sauce Prozis",
+    "calories": 50,
+    "protein": 1.4,
+    "carbs": 6.5,
     "fat": 0.6
+  },
+  {
+    "id": "11",
+    "name": "Chocolate Negro 90%",
+    "calories": 413,
+    "protein": 10.0,
+    "carbs": 14.0,
+    "fat": 55.0
+  },
+  {
+    "id": "12",
+    "name": "Claras de Ovo",
+    "calories": 48,
+    "protein": 11.0,
+    "carbs": 0.7,
+    "fat": 0.2
+  },
+  {
+    "id": "13",
+    "name": "Cogumelos Brancos",
+    "calories": 32,
+    "protein": 3.0,
+    "carbs": 5.0,
+    "fat": 0
+  },
+  {
+    "id": "14",
+    "name": "Farinha de Arroz",
+    "calories": 106,
+    "protein": 2.4,
+    "carbs": 24.3,
+    "fat": 0.3
+  },
+  {
+    "id": "15",
+    "name": "Gelado Feast",
+    "calories": 279,
+    "protein": 3.1,
+    "carbs": 32.0,
+    "fat": 23.0
+  },
+  {
+    "id": "16",
+    "name": "Gelado Sandwich",
+    "calories": 316,
+    "protein": 3.8,
+    "carbs": 39.0,
+    "fat": 19.0
+  },
+  {
+    "id": "17",
+    "name": "Iogurte Skyr natural",
+    "calories": 47,
+    "protein": 8.3,
+    "carbs": 3.8,
+    "fat": 0
+  },
+  {
+    "id": "18",
+    "name": "Leite de Amêndoa",
+    "calories": 12,
+    "protein": 0.4,
+    "carbs": 0,
+    "fat": 1.1
+  },
+  {
+    "id": "19",
+    "name": "Maçãs Verdes",
+    "calories": 59,
+    "protein": 0.3,
+    "carbs": 13.7,
+    "fat": 0.2
+  },
+  {
+    "id": "20",
+    "name": "maionese magra",
+    "calories": 73,
+    "protein": 0.7,
+    "carbs": 9.7,
+    "fat": 6.0
+  },
+  {
+    "id": "21",
+    "name": "Manteiga Amendoin Prozis",
+    "calories": 514,
+    "protein": 26.0,
+    "carbs": 13.0,
+    "fat": 51.0
+  },
+  {
+    "id": "22",
+    "name": "Marinheiras",
+    "calories": 392,
+    "protein": 10.5,
+    "carbs": 67.5,
+    "fat": 11.8
+  },
+  {
+    "id": "23",
+    "name": "Massa",
+    "calories": 133,
+    "protein": 5.0,
+    "carbs": 25.0,
+    "fat": 1.0
+  },
+  {
+    "id": "24",
+    "name": "Mirtilos",
+    "calories": 50,
+    "protein": 0.5,
+    "carbs": 6.4,
+    "fat": 0.6
+  },
+  {
+    "id": "25",
+    "name": "Ovos (60g)",
+    "calories": 143,
+    "protein": 12.5,
+    "carbs": 0.7,
+    "fat": 10.8
+  },
+  {
+    "id": "26",
+    "name": "pantagroel",
+    "calories": 417,
+    "protein": 6.0,
+    "carbs": 57.0,
+    "fat": 27.0
+  },
+  {
+    "id": "27",
+    "name": "Pão (Oroweat)",
+    "calories": 228,
+    "protein": 12.0,
+    "carbs": 39.0,
+    "fat": 6.1
+  },
+  {
+    "id": "28",
+    "name": "Peitos de Frango",
+    "calories": 165,
+    "protein": 31.0,
+    "carbs": 0,
+    "fat": 1.1
+  },
+  {
+    "id": "29",
+    "name": "Pescada",
+    "calories": 82,
+    "protein": 15.8,
+    "carbs": 0,
+    "fat": 1.5
+  },
+  {
+    "id": "30",
+    "name": "Proteina Casein",
+    "calories": 324,
+    "protein": 76.0,
+    "carbs": 9.8,
+    "fat": 2.0
+  },
+  {
+    "id": "31",
+    "name": "Proteina Whey",
+    "calories": 379,
+    "protein": 89.0,
+    "carbs": 3.4,
+    "fat": 3.0
+  },
+  {
+    "id": "32",
+    "name": "Queijo Cottage",
+    "calories": 98,
+    "protein": 13.0,
+    "carbs": 3.8,
+    "fat": 4.0
+  },
+  {
+    "id": "33",
+    "name": "Queijo Fresco Light",
+    "calories": 91,
+    "protein": 11.0,
+    "carbs": 4.9,
+    "fat": 4.0
+  },
+  {
+    "id": "34",
+    "name": "Salada (Legumes etc.)",
+    "calories": 52,
+    "protein": 2.4,
+    "carbs": 7.5,
+    "fat": 0.6
+  },
+  {
+    "id": "35",
+    "name": "Sementes Chia",
+    "calories": 431,
+    "protein": 18.1,
+    "carbs": 13.7,
+    "fat": 31.4
+  },
+  {
+    "id": "36",
+    "name": "Teriaki Sauce Prozis",
+    "calories": 20,
+    "protein": 0.5,
+    "carbs": 4.0,
+    "fat": 0
+  },
+  {
+    "id": "37",
+    "name": "Tortilha Continente",
+    "calories": 290,
+    "protein": 8.0,
+    "carbs": 53.0,
+    "fat": 7.4
+  },
+  {
+    "id": "38",
+    "name": "Snickers",
+    "calories": 425,
+    "protein": 8.6,
+    "carbs": 60.0,
+    "fat": 24.0
+  },
+  {
+    "id": "39",
+    "name": "Vitela estufada",
+    "calories": 246,
+    "protein": 22.9,
+    "carbs": 0.6,
+    "fat": 12.6
+  },
+  {
+    "id": "40",
+    "name": "Carne Vaca",
+    "calories": 218,
+    "protein": 22.0,
+    "carbs": 0,
+    "fat": 10.0
   }
 ]

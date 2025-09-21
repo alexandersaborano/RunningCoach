@@ -8,6 +8,8 @@ export const colors = {
   muted: "#888888", // Texto secundário
   danger: "#E53935", // Erros, alertas
   success: "#43A047", // Sucesso
+  warning: "#FF9500", // Avisos
+  border: "#E0E0E0", // Bordas
 };
 
 export const spacing = {
