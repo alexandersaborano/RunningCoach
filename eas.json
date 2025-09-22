@@ -14,11 +14,5 @@
     "production": {
       "autoIncrement": true
     }
-  },
-  /*"submit": {
-    "production": {"android": {
-        "serviceAccountKeyPath": "./trim-tide-469021-s9-036d1d503623.json",
-        "track": "internal"
-      }}
-  }*/
+  }
 }
