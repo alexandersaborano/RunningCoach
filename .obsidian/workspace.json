@@ -20,8 +20,21 @@
               "icon": "lucide-file",
               "title": "notes"
             }
+          },
+          {
+            "id": "a38f36ea14ddecfe",
+            "type": "leaf",
+            "state": {
+              "type": "vscode-editor",
+              "state": {
+                "file": "src/components/cards/MacroSummaryCard.tsx"
+              },
+              "icon": "lucide-file",
+              "title": "MacroSummaryCard"
+            }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -94,7 +107,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "notes.md",
+                "file": "src/components/cards/MacroSummaryCard.tsx",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +117,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for notes"
+              "title": "Backlinks for MacroSummaryCard"
             }
           },
           {
@@ -113,12 +126,11 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "notes.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from notes"
+              "title": "Outgoing links"
             }
           },
           {
@@ -155,8 +167,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -166,9 +177,24 @@
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
-      "bases:Create new base": false
+      "bases:Create new base": false,
+      "open-vscode:VSCode": false,
+      "vscode-editor:Create Code File": false
     }
   },
-  "active": "ef0d0b0e83cfcbf1",
-  "lastOpenFiles": []
+  "active": "a38f36ea14ddecfe",
+  "lastOpenFiles": [
+    "node_modules/react-native-svg/android/src/SvgPackage73/java/com/horcrux/svg/SvgPackage.java",
+    "node_modules/react-native-svg/android/src/SvgPackage73/java/com/horcrux/svg",
+    "node_modules/react-native-svg/android/src/SvgPackage73/java/com/horcrux",
+    "node_modules/react-native-svg/android/src/SvgPackage73/java/com",
+    "node_modules/react-native-svg/android/src/SvgPackage73/java",
+    "node_modules/react-native-svg/android/src/SvgPackage73",
+    "node_modules/react-native-svg/android/src/SvgViewManager75/java/com/horcrux/svg/SvgViewManager.java",
+    "node_modules/react-native-svg/android/src/SvgViewManager75/java/com/horcrux/svg",
+    "node_modules/react-native-svg/android/src/SvgViewManager75/java/com/horcrux",
+    "node_modules/react-native-svg/android/src/SvgViewManager75/java/com",
+    "node_modules/react-native-svg/android/src/SvgViewManager75/java",
+    "notes.md"
+  ]
 }
