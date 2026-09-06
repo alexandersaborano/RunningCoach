@@ -187,3 +187,18 @@ class MemoryManager:
             except (OSError, json.JSONDecodeError) as e:
                 print(f"[ERRO ANÁLISE] Erro ao ler {caminho.name}: {e}")
         return analises
+
+    def listar_analises_globais(self) -> list:
+        """Lista análises globais com o nome do ficheiro e os seus dados."""
+        resultados = []
+        if not ANALISES_GLOBAIS_DIR.exists():
+            return resultados
+        for caminho in sorted(ANALISES_GLOBAIS_DIR.glob("*.json"), reverse=True):
+            try:
+                with caminho.open("r", encoding="utf-8") as ficheiro:
+                    dados = json.load(ficheiro)
+                if isinstance(dados, dict):
+                    resultados.append({"ficheiro": caminho.name, "dados": dados})
+            except (OSError, json.JSONDecodeError) as error:
+                print(f"[ERRO ANÁLISE] Erro ao ler {caminho.name}: {error}")
+        return resultados

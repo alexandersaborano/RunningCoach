@@ -9,6 +9,15 @@ if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
 import streamlit as st
+from backup_data import (
+    backup_automatico_devido,
+    carregar_configuracao,
+    criar_backup,
+    guardar_configuracao,
+    listar_backups,
+    restaurar_backup,
+    verificar_integridade,
+)
 
 from config.settings import (
     ANTHROPIC_API_KEY,
@@ -76,3 +85,61 @@ st.code(
     "data/historico_sessoes/",
     language="text",
 )
+
+st.subheader("Segurança dos dados locais")
+try:
+    backup_config = carregar_configuracao()
+except ValueError as error:
+    st.error(str(error))
+    backup_config = {"automatico": False, "intervalo_horas": 24, "retencao": 10, "destino": "backups"}
+
+with st.form("configuracao_backups"):
+    destino = st.text_input("Pasta de destino dos backups", value=backup_config.get("destino", "backups"))
+    automatico = st.checkbox("Criar backup automático ao abrir a aplicação", value=bool(backup_config.get("automatico")))
+    intervalo = st.number_input("Intervalo mínimo (horas)", min_value=1, max_value=720, value=int(backup_config.get("intervalo_horas", 24)))
+    retencao = st.number_input("Número de backups a manter", min_value=1, max_value=100, value=int(backup_config.get("retencao", 10)))
+    guardar_backup_config = st.form_submit_button("Guardar configuração de backups")
+
+if guardar_backup_config:
+    guardar_configuracao({
+        "destino": destino.strip() or "backups",
+        "automatico": automatico,
+        "intervalo_horas": int(intervalo),
+        "retencao": int(retencao),
+    })
+    st.success("Configuração de backups guardada.")
+    st.rerun()
+
+if backup_automatico_devido(backup_config):
+    try:
+        caminho = criar_backup(backup_config.get("destino"), int(backup_config.get("retencao", 10)))
+    except (FileNotFoundError, OSError, ValueError) as error:
+        st.error(f"Não foi possível criar o backup automático: {error}")
+    else:
+        st.info(f"Backup automático criado: {caminho.name}")
+
+st.caption("Backups disponíveis")
+backups = listar_backups(backup_config.get("destino"))
+if backups:
+    nomes_backups = [str(caminho) for caminho in backups]
+    backup_selecionado = st.selectbox("Selecionar backup", nomes_backups)
+    confirmar_restauro = st.checkbox("Confirmo que quero substituir os dados atuais.")
+    if st.button("Restaurar backup selecionado", disabled=not confirmar_restauro):
+        try:
+            criar_backup(backup_config.get("destino"), int(backup_config.get("retencao", 10)))
+            restaurar_backup(backup_selecionado)
+        except (FileNotFoundError, OSError, ValueError) as error:
+            st.error(f"Restauro falhou: {error}")
+        else:
+            st.success("Backup restaurado. Reinicia a aplicação para atualizar todos os dados.")
+else:
+    st.info("Ainda não existem backups na pasta configurada.")
+
+st.subheader("Integridade dos ficheiros JSON")
+problemas = verificar_integridade()
+if problemas:
+    st.error(f"Foram encontrados {len(problemas)} problema(s).")
+    for problema in problemas:
+        st.write(f"- {problema}")
+else:
+    st.success("Todos os ficheiros JSON locais são válidos.")

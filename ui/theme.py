@@ -1,5 +1,9 @@
 import streamlit as st
-from backup_data import criar_backup
+from backup_data import (
+    backup_automatico_devido,
+    carregar_configuracao,
+    criar_backup,
+)
 
 
 def aplicar_tema():
@@ -154,12 +158,26 @@ def cabecalho(titulo: str, subtitulo: str, eyebrow: str):
 
 
 def navegacao():
+    erro_backup = None
+    try:
+        configuracao_backup = carregar_configuracao()
+        if backup_automatico_devido(configuracao_backup):
+            criar_backup(
+                configuracao_backup.get("destino"),
+                int(configuracao_backup.get("retencao", 10)),
+            )
+    except (OSError, ValueError) as error:
+        erro_backup = str(error)
+
     st.sidebar.markdown("## 🏃 Atleta AI")
     st.sidebar.caption("Centro de performance · modo local")
+    if erro_backup:
+        st.sidebar.warning(f"Backup automático indisponível: {erro_backup}")
     st.sidebar.markdown("---")
     st.sidebar.page_link("app.py", label="Sessões", icon="📊")
     st.sidebar.page_link("pages/perfil_memoria.py", label="Perfil", icon="👤")
     st.sidebar.page_link("pages/memoria.py", label="Memória AI", icon="🧠")
+    st.sidebar.page_link("pages/analises_globais.py", label="Análises globais", icon="🧭")
     st.sidebar.page_link("pages/configuracoes.py", label="Configurações", icon="⚙️")
     st.sidebar.markdown("---")
     st.sidebar.caption("Dados locais")
