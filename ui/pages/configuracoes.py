@@ -61,6 +61,13 @@ st.caption(
     "Para distribuir agentes por providers, define AGENT_CARGA_PROVIDER, "
     "AGENT_FISIOLOGIA_PROVIDER, AGENT_TREINO_PROVIDER ou AGENT_CRITICO_PROVIDER."
 )
+st.code(
+    "AGENT_CARGA_PROVIDER=gemini\n"
+    "AGENT_FISIOLOGIA_PROVIDER=gemini\n"
+    "AGENT_TREINO_PROVIDER=openai\n"
+    "AGENT_CRITICO_PROVIDER=anthropic",
+    language="dotenv",
+)
 
 if st.button("🔌 Testar ligação ao Intervals.icu"):
     if not INTERVALS_API_KEY or not ATHLETE_ID or ATHLETE_ID == "0":

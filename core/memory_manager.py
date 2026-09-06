@@ -20,7 +20,9 @@ class MemoryManager:
             estrutura_inicial = {
                 "padroes_atleta": [],
                 "regras_estilo": [],
-                "historico_feedback": []
+                "historico_feedback": [],
+                "resumos_semanais_ai": [],
+                "resultados_recomendacoes": [],
             }
             self.guardar_memoria(estrutura_inicial)
 
@@ -40,20 +42,85 @@ class MemoryManager:
                     "regras_estilo", memoria.get("instrucoes_de_estilo", [])
                 )
                 memoria["historico_feedback"] = memoria.get("historico_feedback", [])
+                memoria["resumos_semanais_ai"] = memoria.get("resumos_semanais_ai", [])
+                memoria["resultados_recomendacoes"] = memoria.get("resultados_recomendacoes", [])
+                antes = json.dumps(
+                    (memoria.get("padroes_atleta_entradas"), memoria.get("regras_estilo_entradas")),
+                    sort_keys=True,
+                    ensure_ascii=False,
+                )
+                self._normalizar_entradas_memoria(memoria)
+                depois = json.dumps(
+                    (memoria.get("padroes_atleta_entradas"), memoria.get("regras_estilo_entradas")),
+                    sort_keys=True,
+                    ensure_ascii=False,
+                )
+                if antes != depois:
+                    self.guardar_memoria(memoria)
                 return memoria
         except Exception as e:
             print(f"[ERRO MEMÓRIA] Erro ao carregar memória: {e}")
             return {
                 "padroes_atleta": [],
                 "regras_estilo": [],
-                "historico_feedback": []
+                "historico_feedback": [],
+                "resumos_semanais_ai": [],
+                "resultados_recomendacoes": [],
             }
+
+    @staticmethod
+    def _normalizar_entradas_memoria(memoria):
+        """Cria metadados sem substituir as listas antigas usadas pela UI."""
+        agora = datetime.now().isoformat(timespec="seconds")
+        for legacy, key in (("padroes_atleta", "padroes_atleta_entradas"),
+                            ("regras_estilo", "regras_estilo_entradas")):
+            valores = memoria.get(legacy, [])
+            if not isinstance(valores, list):
+                valores = []
+            existentes = memoria.get(key, [])
+            if not isinstance(existentes, list):
+                existentes = []
+            textos = {str(e.get("conteudo", e.get("texto", ""))) for e in existentes if isinstance(e, dict)}
+            for valor in valores:
+                texto = valor if isinstance(valor, str) else str(valor)
+                if texto and texto not in textos:
+                    existentes.append({"conteudo": valor, "criado_em": agora,
+                                       "expira_em": None, "ativo": True, "origem": "legado"})
+                    textos.add(texto)
+            memoria[key] = existentes
+        return memoria
 
     def guardar_memoria(self, dados: dict):
         """Guarda o dicionário de memória no ficheiro JSON."""
         self.caminho_ficheiro.parent.mkdir(parents=True, exist_ok=True)
         with open(self.caminho_ficheiro, "w", encoding="utf-8") as f:
             json.dump(dados, f, indent=4, ensure_ascii=False)
+
+    def guardar_resumo_semanal(self, resumo: dict):
+        memoria = self.carregar_memoria()
+        chave = resumo.get("semana_inicio")
+        items = [item for item in memoria.get("resumos_semanais_ai", [])
+                 if item.get("semana_inicio") != chave]
+        items.append(resumo)
+        memoria["resumos_semanais_ai"] = items
+        self.guardar_memoria(memoria)
+
+    def carregar_resumos_semanais(self) -> list:
+        return self.carregar_memoria().get("resumos_semanais_ai", [])
+
+    def guardar_resultado_recomendacao(self, resultado: dict):
+        memoria = self.carregar_memoria()
+        memoria.setdefault("resultados_recomendacoes", []).append(resultado)
+        self.guardar_memoria(memoria)
+
+    def carregar_resultados_recomendacoes(self) -> list:
+        return self.carregar_memoria().get("resultados_recomendacoes", [])
+
+    # aliases explícitos para consumidores que distinguem artefactos AI
+    guardar_resumo_semanal_ai = guardar_resumo_semanal
+    carregar_resumos_semanais_ai = carregar_resumos_semanais
+    guardar_outcome_recomendacao = guardar_resultado_recomendacao
+    carregar_outcomes_recomendacoes = carregar_resultados_recomendacoes
 
     def carregar_recuperacao(self, data: str = None) -> dict:
         """Carrega os dados de recuperação guardados para uma data."""

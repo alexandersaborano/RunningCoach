@@ -178,6 +178,7 @@ def navegacao():
     st.sidebar.page_link("pages/perfil_memoria.py", label="Perfil", icon="👤")
     st.sidebar.page_link("pages/memoria.py", label="Memória AI", icon="🧠")
     st.sidebar.page_link("pages/analises_globais.py", label="Análises globais", icon="🧭")
+    st.sidebar.page_link("pages/evolucao_ai.py", label="Evolução AI", icon="🤖")
     st.sidebar.page_link("pages/performance.py", label="Performance", icon="📈")
     st.sidebar.page_link("pages/calendario.py", label="Calendário", icon="🗓️")
     st.sidebar.page_link("pages/configuracoes.py", label="Configurações", icon="⚙️")
