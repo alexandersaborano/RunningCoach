@@ -7,3 +7,5 @@ data/
 backups/
 plan.md
 .backup_config.json
+.venv/
+logs/

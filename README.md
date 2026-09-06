@@ -29,3 +29,27 @@ python backup_data.py
 Por predefinição, o backup é criado em `backups/`, que também está excluída do
 Git. Copia essa pasta para um disco privado ou armazenamento cloud privado.
 Não guardes chaves API no backup.
+
+## Qualidade, manutenção e recuperação
+
+Para instalar e iniciar a aplicação com um único comando:
+
+```powershell
+.\run_local.ps1
+```
+
+O script cria o ambiente virtual se necessário, instala as dependências,
+cria `.env` a partir de `.env.example` quando ainda não existir e inicia o
+Streamlit.
+
+Antes de alterações importantes, cria um backup. Para recuperar dados:
+
+1. Abre a página **Configurações**.
+2. Confirma a integridade dos ficheiros JSON.
+3. Cria um backup dos dados atuais.
+4. Seleciona um backup válido e confirma o restauro.
+5. Reinicia a aplicação e volta a verificar a integridade.
+
+Se um ficheiro JSON estiver corrompido, não o edites por tentativa. Preserva
+primeiro uma cópia da pasta `data/`, verifica um backup anterior e restaura-o
+pela interface. Os logs locais são opcionais e não devem conter credenciais.

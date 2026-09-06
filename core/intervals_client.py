@@ -3,10 +3,13 @@ from pathlib import Path
 
 import requests
 from config.settings import ATHLETE_ID, FICHEIRO_PERFIL, INTERVALS_API_KEY
+from core.data_validation import validate_profile
+from core.safe_logging import get_logger
 
 
 class IntervalsClient:
     def __init__(self, api_key=INTERVALS_API_KEY, athlete_id=ATHLETE_ID):
+        self.logger = get_logger("intervals")
         self.api_key = api_key
         self.athlete_id = athlete_id
         self.base_url = "https://intervals.icu/api/v1"
@@ -21,12 +24,13 @@ class IntervalsClient:
                 perfil = json.load(ficheiro)
             return perfil if isinstance(perfil, dict) and perfil else None
         except (OSError, json.JSONDecodeError) as e:
-            print(f"[EXCEÇÃO] Erro ao ler perfil guardado: {e}")
+            self.logger.warning("Erro ao ler perfil guardado: %s", e)
             return None
 
     def _guardar_perfil(self, perfil):
         """Guarda localmente um perfil válido obtido da API."""
         try:
+            validate_profile(perfil)
             Path(FICHEIRO_PERFIL).parent.mkdir(parents=True, exist_ok=True)
             perfil_existente = self._carregar_perfil_guardado() or {}
             perfil_a_guardar = {**perfil_existente, **perfil}
@@ -34,7 +38,7 @@ class IntervalsClient:
                 json.dump(perfil_a_guardar, ficheiro, indent=4, ensure_ascii=False)
             return perfil_a_guardar
         except OSError as e:
-            print(f"[EXCEÇÃO] Erro ao guardar perfil: {e}")
+            self.logger.error("Erro ao guardar perfil: %s", e)
             return perfil
 
     def guardar_dados_pessoais(self, dados: dict):

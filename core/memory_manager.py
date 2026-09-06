@@ -7,6 +7,12 @@ from config.settings import (
     FICHEIRO_RECUPERACAO,
     HISTORICO_DIR,
 )
+from core.data_validation import (
+    validate_global_analysis,
+    validate_memory,
+    validate_recovery,
+    validate_session,
+)
 
 
 class MemoryManager:
@@ -92,6 +98,7 @@ class MemoryManager:
 
     def guardar_memoria(self, dados: dict):
         """Guarda o dicionário de memória no ficheiro JSON."""
+        dados = validate_memory(dados)
         self.caminho_ficheiro.parent.mkdir(parents=True, exist_ok=True)
         with open(self.caminho_ficheiro, "w", encoding="utf-8") as f:
             json.dump(dados, f, indent=4, ensure_ascii=False)
@@ -149,6 +156,7 @@ class MemoryManager:
             "recuperacao": recuperacao,
             "fc_repouso": fc_repouso,
         }
+        validate_recovery(dados)
         FICHEIRO_RECUPERACAO.parent.mkdir(parents=True, exist_ok=True)
         with open(FICHEIRO_RECUPERACAO, "w", encoding="utf-8") as ficheiro:
             json.dump(dados, ficheiro, indent=4, ensure_ascii=False)
@@ -193,6 +201,7 @@ class MemoryManager:
 
     def guardar_sessao(self, sessao: dict):
         """Guarda ou atualiza uma sessão analisada no histórico local."""
+        sessao = validate_session(sessao)
         atividade_id = str(sessao.get("atividade_id", "")).strip()
         if not atividade_id:
             raise ValueError("A sessão precisa de um atividade_id.")
@@ -233,6 +242,7 @@ class MemoryManager:
 
     def guardar_analise_global(self, analise: dict):
         """Guarda uma análise global e todo o contexto usado para a produzir."""
+        analise = validate_global_analysis(analise)
         data = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         ANALISES_GLOBAIS_DIR.mkdir(parents=True, exist_ok=True)
         caminho = ANALISES_GLOBAIS_DIR / f"analise_{data}.json"
