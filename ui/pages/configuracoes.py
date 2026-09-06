@@ -40,7 +40,11 @@ colunas[2].metric("ID atleta", "Configurado" if ATHLETE_ID and ATHLETE_ID != "0"
 colunas[3].metric("OpenAI", "Configurado" if OPENAI_API_KEY else "Opcional")
 colunas[4].metric("Anthropic", "Configurado" if ANTHROPIC_API_KEY else "Opcional")
 
-st.info("As chaves são lidas do ficheiro .env. Edita-o localmente e reinicia a aplicação para aplicar alterações.")
+st.info(
+    "Localmente, as chaves podem estar no ficheiro .env. "
+    "No Streamlit Cloud, configura-as em Manage app > Settings > Secrets; "
+    "não as publiques no GitHub."
+)
 
 st.subheader("Agentes especializados")
 for agente in AGENT_DEFINITIONS:

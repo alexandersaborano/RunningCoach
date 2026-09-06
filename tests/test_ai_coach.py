@@ -1,10 +1,17 @@
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from core.ai_coach import AICoach
 
 
 class AICoachTests(unittest.TestCase):
+    def test_missing_gemini_key_does_not_crash_startup(self):
+        with patch("core.ai_coach.GEMINI_API_KEY", ""):
+            coach = AICoach()
+
+        self.assertFalse(coach.disponivel)
+        self.assertIn("GEMINI_API_KEY", coach.config_error)
+
     def test_global_analysis_includes_recovery_context(self):
         response = Mock(text="análise global")
         client = Mock()

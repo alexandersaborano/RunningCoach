@@ -30,6 +30,8 @@ navegacao()
 client = IntervalsClient()
 memory = MemoryManager()
 coach = AICoach(memory_manager=memory)
+if not coach.disponivel:
+    st.warning(f"Análise AI indisponível: {coach.config_error}")
 
 # ==============================================================================
 # BARRA LATERAL (SIDEBAR)
@@ -299,7 +301,11 @@ if historico:
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
 
-        if st.button("🧠 Analisar evolução global com Gemini", type="primary"):
+        if st.button(
+            "🧠 Analisar evolução global com Gemini",
+            type="primary",
+            disabled=not coach.disponivel,
+        ):
             with st.spinner("A analisar o histórico relevante..."):
                 ids_relevantes = set(historico_filtrado["atividade_id"])
                 sessoes_relevantes = [
@@ -490,7 +496,11 @@ MÉTRICAS POR LAP:
                 width="stretch",
             )
         
-        if st.button("🤖 Gerar Análise com Gemini", type="primary"):
+        if st.button(
+            "🤖 Gerar Análise com Gemini",
+            type="primary",
+            disabled=not coach.disponivel,
+        ):
             with st.spinner("O Gemini está a analisar a sessão..."):
                 analise = coach.analisar_sessao(relatorio_detalhado)
                 st.session_state["ultima_analise"] = analise
@@ -518,7 +528,10 @@ MÉTRICAS POR LAP:
             
             with st.form("form_feedback"):
                 user_fb = st.text_input("Comentário / Ajuste ao relatório:", placeholder="Ex: O lap 3 teve FC alta porque apanhei uma subida acentuada.")
-                submetido = st.form_submit_button("Enviar Feedback & Atualizar IA")
+                submetido = st.form_submit_button(
+                    "Enviar Feedback & Atualizar IA",
+                    disabled=not coach.disponivel,
+                )
                 
                 if submetido and user_fb:
                     with st.spinner("A processar feedback com o Gemini..."):

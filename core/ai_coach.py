@@ -19,20 +19,39 @@ class AICoach:
 
     def __init__(self, memory_manager=None):
         self.memory_manager = memory_manager
-        self.client = genai.Client(api_key=GEMINI_API_KEY)
+        self.client = None
+        self.config_error = None
+        if GEMINI_API_KEY:
+            try:
+                self.client = genai.Client(api_key=GEMINI_API_KEY)
+            except ValueError:
+                self.config_error = (
+                    "A configuração do Gemini foi rejeitada. "
+                    "Confirma o secret GEMINI_API_KEY no Streamlit Cloud."
+                )
+        else:
+            self.config_error = (
+                "GEMINI_API_KEY não está configurada. "
+                "Adiciona-a em Settings > Secrets no Streamlit Cloud."
+            )
         self.model_id = "gemini-3.6-flash"
         self.chat_session = None
         self.ultimo_erro = None
         self.agent_registry = AgentRegistry()
-        self.agent_registry.register(
-            "gemini", GeminiProvider(self.client, self.model_id)
-        )
+        if self.client is not None:
+            self.agent_registry.register(
+                "gemini", GeminiProvider(self.client, self.model_id)
+            )
         if OPENAI_API_KEY:
             self.agent_registry.register("openai", OpenAIProvider(OPENAI_API_KEY))
         if ANTHROPIC_API_KEY:
             self.agent_registry.register(
                 "anthropic", AnthropicProvider(ANTHROPIC_API_KEY)
             )
+
+    @property
+    def disponivel(self) -> bool:
+        return self.client is not None
 
     def analisar_sessao(self, relatorio_detalhado: str) -> str:
         """
