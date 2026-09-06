@@ -318,6 +318,7 @@ if historico:
                     sessoes_relevantes,
                     recuperacao_por_data=recuperacao_historico,
                     analises_anteriores=analises_anteriores,
+                    perfil=perfil,
                 )
                 contexto_global = {
                     "data": datetime.now().isoformat(timespec="seconds"),

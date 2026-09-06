@@ -101,12 +101,14 @@ Se a prescrição não tiver dados mensuráveis, declara essa limitação explic
         sessoes: list,
         recuperacao_por_data: dict = None,
         analises_anteriores: list = None,
+        perfil: dict = None,
     ) -> str:
         """Analisa tendências do histórico relevante para orientar progressão."""
         if not sessoes:
             return "Não existem sessões suficientes para uma análise global."
         recuperacao_por_data = recuperacao_por_data or {}
         analises_anteriores = analises_anteriores or []
+        perfil = perfil or {}
         referencia = "\n\n".join(
             f"ANÁLISE ANTERIOR {idx + 1} ({item.get('data', 'sem data')}):\n"
             f"{item.get('analise', '')}"
@@ -116,6 +118,8 @@ Se a prescrição não tiver dados mensuráveis, declara essa limitação explic
             f"- {s.get('data', '')[:10]} | {s.get('nome', 'Sem nome')} | "
             f"{s.get('distancia_km', 0)} km | pace {s.get('pace_min_km', 'N/A')} | "
             f"FC média {s.get('fc_media', 'N/A')} | TSS {s.get('carga_tss', 0)} | "
+            f"prescrição: {s.get('prescricao', 'N/A')} | "
+            f"comparação: {s.get('comparacao_treino', 'N/A')} | "
             f"sono {recuperacao_por_data.get(s.get('data', '')[:10], {}).get('sono_horas', 'N/A')} h | "
             f"recuperação {recuperacao_por_data.get(s.get('data', '')[:10], {}).get('recuperacao', 'N/A')}/10 | "
             f"FC repouso {recuperacao_por_data.get(s.get('data', '')[:10], {}).get('fc_repouso', 'N/A')} bpm"
@@ -136,6 +140,9 @@ recuperação percebida, FC de repouso e sinais de fadiga. Relaciona alteraçõe
 de desempenho com recuperação quando existirem dados. Identifica progressos,
 limitações e propõe uma progressão realista para as próximas semanas. Sê crítico,
 não inventes dados e responde em Português.
+
+PERFIL E OBJETIVOS DO ATLETA:
+{perfil or "Perfil não preenchido."}
 
 SESSÕES RELEVANTES:
 {resumo}
@@ -165,10 +172,11 @@ ANÁLISES GLOBAIS ANTERIORES (usa apenas para comparar evolução e corrigir con
         sessoes: list,
         recuperacao_por_data: dict = None,
         analises_anteriores: list = None,
+        perfil: dict = None,
     ) -> str:
         """Executa agentes especializados e o coordenador Gemini."""
         contexto = self._construir_contexto_global(
-            sessoes, recuperacao_por_data, analises_anteriores
+            sessoes, recuperacao_por_data, analises_anteriores, perfil
         )
         try:
             self.ultimo_erro = None
@@ -178,12 +186,17 @@ ANÁLISES GLOBAIS ANTERIORES (usa apenas para comparar evolução e corrigir con
             return f"Erro na análise multiagente: {error}"
 
     def _construir_contexto_global(
-        self, sessoes: list, recuperacao_por_data=None, analises_anteriores=None
+        self,
+        sessoes: list,
+        recuperacao_por_data=None,
+        analises_anteriores=None,
+        perfil=None,
     ) -> str:
         """Constrói contexto partilhado pelos agentes especializados."""
         if not sessoes:
             return "Não existem sessões suficientes."
         recuperacao_por_data = recuperacao_por_data or {}
+        perfil = perfil or {}
         linhas = []
         for sessao in sessoes[-60:]:
             data = sessao.get("data", "")[:10]
@@ -192,6 +205,8 @@ ANÁLISES GLOBAIS ANTERIORES (usa apenas para comparar evolução e corrigir con
                 f"- {data} | {sessao.get('nome', 'Sem nome')} | "
                 f"{sessao.get('distancia_km', 0)} km | pace {sessao.get('pace_min_km', 'N/A')} | "
                 f"FC {sessao.get('fc_media', 'N/A')} | TSS {sessao.get('carga_tss', 0)} | "
+                f"prescrição {sessao.get('prescricao', 'N/A')} | "
+                f"comparação {sessao.get('comparacao_treino', 'N/A')} | "
                 f"sono {recuperacao.get('sono_horas', 'N/A')} h | "
                 f"recuperação {recuperacao.get('recuperacao', 'N/A')}/10 | "
                 f"FC repouso {recuperacao.get('fc_repouso', 'N/A')}"
@@ -203,7 +218,8 @@ ANÁLISES GLOBAIS ANTERIORES (usa apenas para comparar evolução e corrigir con
             sessao.get("analise", "") for sessao in sessoes[-10:] if sessao.get("analise")
         )
         return (
-            "SESSÕES:\n" + "\n".join(linhas)
+            "PERFIL E OBJETIVOS DO ATLETA:\n" + (str(perfil) if perfil else "Não preenchido.")
+            + "\n\nSESSÕES:\n" + "\n".join(linhas)
             + "\n\nANÁLISES INDIVIDUAIS:\n" + (individuais or "Nenhuma")
             + "\n\nANÁLISES GLOBAIS ANTERIORES:\n" + (anteriores or "Nenhuma")
         )

@@ -93,6 +93,28 @@ class AICoachTests(unittest.TestCase):
         self.assertIn("ANÁLISES INDIVIDUAIS RELEVANTES", prompt)
         self.assertIn("A execução mostrou evolução no pace.", prompt)
 
+    def test_global_analysis_includes_profile_and_training_comparison(self):
+        response = Mock(text="análise")
+        client = Mock()
+        client.models.generate_content.return_value = response
+        coach = AICoach.__new__(AICoach)
+        coach.client = client
+        coach.model_id = "test-model"
+
+        coach.analisar_historico_global(
+            [{
+                "data": "2026-09-05",
+                "nome": "Tempo",
+                "prescricao": "3 x 10 min",
+                "comparacao_treino": {"desvios": "intervalos incompletos"},
+            }],
+            perfil={"objetivos": "melhorar 10 km", "peso_kg": 74.3},
+        )
+
+        prompt = client.models.generate_content.call_args.kwargs["contents"]
+        self.assertIn("melhorar 10 km", prompt)
+        self.assertIn("intervalos incompletos", prompt)
+
 
 if __name__ == "__main__":
     unittest.main()
