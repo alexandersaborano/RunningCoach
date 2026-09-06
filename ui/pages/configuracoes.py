@@ -41,9 +41,8 @@ colunas[3].metric("OpenAI", "Configurado" if OPENAI_API_KEY else "Opcional")
 colunas[4].metric("Anthropic", "Configurado" if ANTHROPIC_API_KEY else "Opcional")
 
 st.info(
-    "Localmente, as chaves podem estar no ficheiro .env. "
-    "No Streamlit Cloud, configura-as em Manage app > Settings > Secrets; "
-    "não as publiques no GitHub."
+    "A aplicação está configurada para utilização local. "
+    "As chaves são lidas do ficheiro .env e os dados ficam na pasta data/."
 )
 
 st.subheader("Agentes especializados")
@@ -66,6 +65,10 @@ if st.button("🔌 Testar ligação ao Intervals.icu"):
             st.error("Não foi possível obter o perfil. Confirma a chave e o ID do atleta.")
 
 st.subheader("Localização dos dados")
+st.caption(
+    "Usa o botão de backup na barra lateral antes de alterações importantes "
+    "ou executa `python backup_data.py`."
+)
 st.code(
     "data/perfil_atleta.json\n"
     "data/memoria_atleta.json\n"

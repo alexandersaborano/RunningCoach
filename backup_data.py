@@ -10,12 +10,18 @@ DATA_DIR = BASE_DIR / "data"
 BACKUP_DIR = BASE_DIR / "backups"
 
 
-def main() -> None:
+def criar_backup() -> Path:
     if not DATA_DIR.is_dir():
-        raise SystemExit("A pasta data/ não existe; não há dados para copiar.")
+        raise FileNotFoundError("A pasta data/ não existe; não há dados para copiar.")
 
     destino = BACKUP_DIR / datetime.now().strftime("data_%Y%m%d_%H%M%S")
+    BACKUP_DIR.mkdir(exist_ok=True)
     shutil.copytree(DATA_DIR, destino)
+    return destino
+
+
+def main() -> None:
+    destino = criar_backup()
     print(f"Backup criado em: {destino}")
 
 

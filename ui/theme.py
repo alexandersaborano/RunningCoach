@@ -1,4 +1,5 @@
 import streamlit as st
+from backup_data import criar_backup
 
 
 def aplicar_tema():
@@ -154,10 +155,18 @@ def cabecalho(titulo: str, subtitulo: str, eyebrow: str):
 
 def navegacao():
     st.sidebar.markdown("## 🏃 Atleta AI")
-    st.sidebar.caption("Centro de performance")
+    st.sidebar.caption("Centro de performance · modo local")
     st.sidebar.markdown("---")
     st.sidebar.page_link("app.py", label="Sessões", icon="📊")
     st.sidebar.page_link("pages/perfil_memoria.py", label="Perfil", icon="👤")
     st.sidebar.page_link("pages/memoria.py", label="Memória AI", icon="🧠")
     st.sidebar.page_link("pages/configuracoes.py", label="Configurações", icon="⚙️")
     st.sidebar.markdown("---")
+    st.sidebar.caption("Dados locais")
+    if st.sidebar.button("💾 Criar backup agora", use_container_width=True):
+        try:
+            destino = criar_backup()
+        except FileNotFoundError as error:
+            st.sidebar.error(str(error))
+        else:
+            st.sidebar.success(f"Backup criado: {destino.name}")
