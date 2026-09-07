@@ -507,6 +507,15 @@ MÉTRICAS POR LAP:
                 key="comparacao_treino_tabela",
                 file_stem="comparacao_treino",
             )
+
+        feedback_pre_analise = st.text_area(
+            "Feedback do atleta antes da análise AI",
+            placeholder=(
+                "Ex.: senti a perna direita pesada, mas a respiração esteve controlada."
+            ),
+            key=f"feedback_pre_analise_{corrida.get('id')}",
+            help="Este feedback é guardado com a sessão e incluído no prompt da análise.",
+        )
         
         if st.button(
             "🤖 Gerar Análise com Gemini",
@@ -514,15 +523,27 @@ MÉTRICAS POR LAP:
             disabled=not coach.disponivel,
         ):
             with st.spinner("O Gemini está a analisar a sessão..."):
-                analise = coach.analisar_sessao(relatorio_detalhado)
+                feedback_pre_analise = feedback_pre_analise.strip()
+                relatorio_com_feedback = relatorio_detalhado
+                if feedback_pre_analise:
+                    relatorio_com_feedback += (
+                        "\n--------------------------------------------------\n"
+                        "FEEDBACK DO ATLETA ANTES DA ANÁLISE:\n"
+                        f"{feedback_pre_analise}\n"
+                    )
+                analise = coach.analisar_sessao(
+                    relatorio_detalhado,
+                    feedback_atleta=feedback_pre_analise,
+                )
                 st.session_state["ultima_analise"] = analise
-                st.session_state["ultimo_relatorio"] = relatorio_detalhado
+                st.session_state["ultimo_relatorio"] = relatorio_com_feedback
                 sessao = atividade_para_historico(corrida)
                 atividade_id = sessao["atividade_id"]
                 if atividade_id:
                     sessao.update({
                         "analise": analise,
-                        "relatorio": relatorio_detalhado,
+                        "relatorio": relatorio_com_feedback,
+                        "feedback_atleta": feedback_pre_analise,
                         "prescricao": descricao_plano,
                         "comparacao_treino": comparacao_treino,
                     })

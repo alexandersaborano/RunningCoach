@@ -53,7 +53,11 @@ class AICoach:
     def disponivel(self) -> bool:
         return self.client is not None
 
-    def analisar_sessao(self, relatorio_detalhado: str) -> str:
+    def analisar_sessao(
+        self,
+        relatorio_detalhado: str,
+        feedback_atleta: str = "",
+    ) -> str:
         """
         Gera o relatório de análise inicial da sessão usando generate_content
         com AFC desativado para evitar warnings.
@@ -66,9 +70,15 @@ class AICoach:
             if padroes or regras:
                 contexto_memoria = f"\nPADRÕES REGISTADOS DO ATLETA:\n{padroes}\n\nREGRAS DE ANÁLISE:\n{regras}\n"
 
+        contexto_feedback = (
+            f"\nFEEDBACK DO ATLETA ANTES DA ANÁLISE:\n{feedback_atleta.strip()}\n"
+            if feedback_atleta.strip()
+            else "\nFEEDBACK DO ATLETA ANTES DA ANÁLISE:\nNão fornecido.\n"
+        )
         prompt = f"""Tu és um treinador de corrida de elite. Analisa a seguinte sessão de treino e fornece um feedback construtivo, detalhado e motivador em Português.
 
 {contexto_memoria}
+{contexto_feedback}
 DADOS DO TREINO:
 {relatorio_detalhado}
 
