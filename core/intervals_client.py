@@ -4,6 +4,7 @@ from pathlib import Path
 import requests
 from config.settings import ATHLETE_ID, FICHEIRO_PERFIL, INTERVALS_API_KEY
 from core.data_validation import validate_profile
+from core.heart_rate_zones import calcular_zonas_hrr
 from core.safe_logging import get_logger
 
 
@@ -45,6 +46,22 @@ class IntervalsClient:
         """Atualiza os dados pessoais sem substituir métricas sincronizadas."""
         perfil = self._carregar_perfil_guardado() or {}
         perfil.update(dados)
+        return self._guardar_perfil(perfil)
+
+    def guardar_perfil_zonas_ativo(self, nome: str):
+        """Seleciona um perfil de zonas sem apagar as restantes configurações."""
+        perfil = self._carregar_perfil_guardado() or {}
+        perfis = perfil.get("perfis_zonas", {})
+        selecionado = perfis.get(nome)
+        if not isinstance(selecionado, dict):
+            raise ValueError(f"Perfil de zonas desconhecido: {nome}")
+        perfil["perfil_zonas_ativo"] = nome
+        perfil.update({
+            "zonas_hr": selecionado.get("limites", []),
+            "zonas_hr_nomes": selecionado.get("nomes", []),
+            "zonas_hr_metodo": selecionado.get("metodo", "desconhecido"),
+            "zonas_hr_origem": selecionado.get("origem", nome),
+        })
         return self._guardar_perfil(perfil)
 
     def obter_perfil_e_zonas(self):
@@ -92,14 +109,42 @@ class IntervalsClient:
                     if zonas:
                         zona_origem = "athlete:icu_hr_zones"
 
+                perfis_zonas = {
+                    "intervals_icu": {
+                        "limites": zonas,
+                        "nomes": zona_nomes,
+                        "metodo": zona_metodo or "desconhecido",
+                        "origem": zona_origem,
+                    }
+                }
+                try:
+                    zonas_hrr = calcular_zonas_hrr(max_hr, resting_hr)
+                except ValueError:
+                    zonas_hrr = []
+                if zonas_hrr:
+                    perfis_zonas["hrr_karvonen"] = {
+                        "limites": zonas_hrr,
+                        "nomes": [f"Z{i}" for i in range(1, len(zonas_hrr) + 1)],
+                        "metodo": "%HRR (Karvonen)",
+                        "origem": "calculado_localmente",
+                    }
+                perfil_existente = self._carregar_perfil_guardado() or {}
+                perfil_ativo = perfil_existente.get("perfil_zonas_ativo", "intervals_icu")
+                if perfil_ativo == "hrr_karvonen" and "hrr_karvonen" in perfis_zonas:
+                    fonte_ativa = perfis_zonas["hrr_karvonen"]
+                else:
+                    perfil_ativo = "intervals_icu"
+                    fonte_ativa = perfis_zonas["intervals_icu"]
                 perfil = {
                     "max_hr": max_hr,
                     "lthr": lthr,
                     "resting_hr": resting_hr,
-                    "zonas_hr": zonas,
-                    "zonas_hr_nomes": zona_nomes,
-                    "zonas_hr_metodo": zona_metodo or "desconhecido",
-                    "zonas_hr_origem": zona_origem,
+                    "zonas_hr": fonte_ativa["limites"],
+                    "zonas_hr_nomes": fonte_ativa["nomes"],
+                    "zonas_hr_metodo": fonte_ativa["metodo"],
+                    "zonas_hr_origem": fonte_ativa["origem"],
+                    "perfis_zonas": perfis_zonas,
+                    "perfil_zonas_ativo": perfil_ativo,
                 }
                 return self._guardar_perfil(perfil)
             return self._carregar_perfil_guardado()

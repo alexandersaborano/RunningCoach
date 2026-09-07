@@ -65,6 +65,23 @@ if perfil:
         zonas_hrr = []
     if zonas_hrr:
         st.write("Limites calculados por %HRR (Karvonen):", zonas_hrr)
+    perfis_zonas = perfil.get("perfis_zonas", {})
+    if perfis_zonas:
+        nomes_perfis = list(perfis_zonas)
+        ativo = perfil.get("perfil_zonas_ativo", nomes_perfis[0])
+        if ativo not in nomes_perfis:
+            ativo = nomes_perfis[0]
+        selecionado = st.selectbox(
+            "Perfil de zonas ativo",
+            nomes_perfis,
+            index=nomes_perfis.index(ativo),
+            key="perfil_zonas_ativo",
+        )
+        if st.button("Guardar perfil de zonas ativo"):
+            perfil_guardado = client.guardar_perfil_zonas_ativo(selecionado)
+            st.session_state["perfil_atleta"] = perfil_guardado
+            st.success(f"Perfil de zonas ativo: {selecionado}.")
+            st.rerun()
 else:
     st.warning("Não foi possível carregar o perfil do Intervals.icu.")
 

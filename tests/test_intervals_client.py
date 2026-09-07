@@ -70,6 +70,38 @@ class IntervalsClientTests(unittest.TestCase):
         self.assertEqual(profile["zonas_hr_metodo"], "LTHR")
         self.assertEqual(profile["zonas_hr_nomes"], ["Z1", "Z2", "Z3", "Z4", "Z5"])
 
+    def test_saves_parallel_zone_profiles_and_switches_active_profile(self):
+        with tempfile.TemporaryDirectory() as directory:
+            profile_path = Path(directory) / "profile.json"
+            with patch("core.intervals_client.FICHEIRO_PERFIL", profile_path):
+                client = IntervalsClient()
+                client._guardar_perfil({
+                    "max_hr": 190,
+                    "resting_hr": 50,
+                    "perfis_zonas": {
+                        "intervals_icu": {
+                            "limites": [120, 150],
+                            "nomes": ["Z1", "Z2"],
+                            "metodo": "LTHR",
+                            "origem": "sportSettings:Run",
+                        },
+                        "hrr_karvonen": {
+                            "limites": [120, 162],
+                            "nomes": ["Z1", "Z2"],
+                            "metodo": "%HRR (Karvonen)",
+                            "origem": "calculado_localmente",
+                        },
+                    },
+                    "perfil_zonas_ativo": "intervals_icu",
+                })
+
+                profile = client.guardar_perfil_zonas_ativo("hrr_karvonen")
+
+        self.assertEqual(profile["perfil_zonas_ativo"], "hrr_karvonen")
+        self.assertEqual(profile["zonas_hr"], [120, 162])
+        self.assertEqual(profile["zonas_hr_origem"], "calculado_localmente")
+        self.assertIn("intervals_icu", profile["perfis_zonas"])
+
 
 if __name__ == "__main__":
     unittest.main()

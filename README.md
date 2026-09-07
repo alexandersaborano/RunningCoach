@@ -18,7 +18,8 @@ O perfil sincronizado usa `GET /api/v1/athlete/{athlete_id}` do Intervals.icu.
 As zonas de corrida podem vir de `sportSettings.hr_zones`, acompanhadas por
 `hr_zone_names` e `hr_load_type`. A app preserva a origem e o método e não
 assume que essas zonas são calculadas por `%HRR`; as zonas Karvonen são
-apresentadas separadamente.
+apresentadas separadamente. O atleta pode selecionar explicitamente o perfil
+Intervals.icu ou o perfil local `%HRR (Karvonen)`, mantendo ambos guardados.
 
 ## Executar localmente
 
