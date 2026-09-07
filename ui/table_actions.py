@@ -7,6 +7,46 @@ import pandas as pd
 import streamlit as st
 
 
+def preparar_tabela(
+    data: pd.DataFrame,
+    *,
+    query: str = "",
+    sort_column: str | None = None,
+    descending: bool = False,
+    columns: list[str] | None = None,
+) -> pd.DataFrame:
+    """Aplica as transformações da tabela sem efeitos de interface."""
+    working = data.copy()
+    if query:
+        mask = working.astype(str).apply(
+            lambda column: column.str.contains(
+                query,
+                case=False,
+                na=False,
+                regex=False,
+            )
+        ).any(axis=1)
+        working = working.loc[mask]
+    if sort_column in working.columns:
+        working = working.sort_values(
+            sort_column,
+            ascending=not descending,
+            kind="stable",
+            na_position="last",
+        )
+    visible_columns = columns or list(working.columns)
+    return working.loc[
+        :,
+        [column for column in visible_columns if column in working.columns],
+    ]
+
+
+def _json_records(data: pd.DataFrame) -> list[dict]:
+    """Converte valores pandas para tipos serializáveis em JSON."""
+    normalized = data.astype(object).where(pd.notna(data), None)
+    return normalized.to_dict(orient="records")
+
+
 def tabela_com_acoes(
     data: pd.DataFrame,
     *,
@@ -41,15 +81,13 @@ def tabela_com_acoes(
             key=f"{key}_columns",
         )
 
-    if query:
-        mask = working.astype(str).apply(
-            lambda column: column.str.contains(query, case=False, na=False, regex=False)
-        ).any(axis=1)
-        working = working.loc[mask]
-    if sort_column in working.columns:
-        working = working.sort_values(sort_column, ascending=not descending, kind="stable")
-    visible_columns = columns or list(working.columns)
-    visible = working.loc[:, [column for column in visible_columns if column in working.columns]]
+    visible = preparar_tabela(
+        working,
+        query=query,
+        sort_column=sort_column,
+        descending=descending,
+        columns=columns,
+    )
     st.dataframe(visible, width="stretch", hide_index=True)
 
     csv_bytes = visible.to_csv(index=False).encode("utf-8-sig")
@@ -73,7 +111,7 @@ def tabela_com_acoes(
     downloads[2].download_button(
         "⬇️ JSON",
         json.dumps(
-            visible.where(pd.notna(visible), None).to_dict(orient="records"),
+            _json_records(visible),
             ensure_ascii=False,
             indent=2,
         ).encode("utf-8"),
