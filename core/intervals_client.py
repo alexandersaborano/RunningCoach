@@ -125,6 +125,7 @@ class IntervalsClient:
                     perfis_zonas["hrr_karvonen"] = {
                         "limites": zonas_hrr,
                         "nomes": [f"Z{i}" for i in range(1, len(zonas_hrr) + 1)],
+                        "percentagens": [0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
                         "metodo": "%HRR (Karvonen)",
                         "origem": "calculado_localmente",
                     }

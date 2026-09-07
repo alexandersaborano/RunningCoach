@@ -6,9 +6,9 @@ from collections.abc import Sequence
 def calcular_zonas_hrr(
     fc_maxima: int | float,
     fc_repouso: int | float,
-    percentagens: Sequence[float] = (0.5, 0.6, 0.7, 0.8, 0.9, 1.0),
+    percentagens: Sequence[float] = (0.6, 0.7, 0.8, 0.9, 1.0),
 ) -> list[int]:
-    """Calcula limites superiores por Karvonen/%HRR."""
+    """Calcula os limites superiores das cinco zonas Garmin por %HRR."""
     try:
         maxima = float(fc_maxima)
         repouso = float(fc_repouso)

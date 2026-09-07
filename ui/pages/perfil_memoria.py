@@ -64,7 +64,21 @@ if perfil:
     except ValueError:
         zonas_hrr = []
     if zonas_hrr:
-        st.write("Limites calculados por %HRR (Karvonen):", zonas_hrr)
+        st.caption(
+            "Fórmula: FC repouso + (%HRR × (FC máxima - FC repouso)). "
+            f"Valores usados: FC repouso {perfil.get('resting_hr')} bpm e "
+            f"FC máxima {perfil.get('max_hr')} bpm."
+        )
+        percentagens_hrr = (0.5, 0.6, 0.7, 0.8, 0.9, 1.0)
+        limites_hrr = [round(perfil["resting_hr"])]
+        limites_hrr.extend(zonas_hrr)
+        st.write("Zonas calculadas por %HRR (Karvonen):")
+        for indice in range(5):
+            st.write(
+                f"Z{indice + 1}: {percentagens_hrr[indice] * 100:.0f}-"
+                f"{percentagens_hrr[indice + 1] * 100:.0f}% HRR · "
+                f"{limites_hrr[indice]}-{limites_hrr[indice + 1]} bpm"
+            )
     perfis_zonas = perfil.get("perfis_zonas", {})
     if perfis_zonas:
         nomes_perfis = list(perfis_zonas)
