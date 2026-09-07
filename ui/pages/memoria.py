@@ -59,6 +59,55 @@ with st.expander("Adicionar memória manual"):
             st.success("Regra guardada.")
             st.rerun()
 
+st.subheader("Gerir memórias AI")
+memorias_geriveis = memory.listar_memorias_geriveis()
+if memorias_geriveis:
+    memoria_df = pd.DataFrame(memorias_geriveis)
+    tabela_com_acoes(
+        memoria_df.drop(columns=["id"], errors="ignore"),
+        key="memorias_geriveis",
+        file_stem="memorias_ai",
+    )
+    opcoes_memoria = {
+        f"{item['categoria']} · {item['texto'][:80]}": item["id"]
+        for item in memorias_geriveis
+    }
+    memoria_selecionada = st.selectbox(
+        "Memória a gerir",
+        list(opcoes_memoria),
+        key="memoria_a_gerir",
+    )
+    acao_colunas = st.columns(3)
+    item_selecionado = next(
+        item for item in memorias_geriveis
+        if item["id"] == opcoes_memoria[memoria_selecionada]
+    )
+    with acao_colunas[0]:
+        if st.button(
+            "Ativar",
+            disabled=item_selecionado["ativo"],
+            key="ativar_memoria",
+        ):
+            memory.atualizar_memoria_gerivel(item_selecionado["id"], ativo=True)
+            st.success("Memória ativada.")
+            st.rerun()
+    with acao_colunas[1]:
+        if st.button(
+            "Desativar",
+            disabled=not item_selecionado["ativo"],
+            key="desativar_memoria",
+        ):
+            memory.atualizar_memoria_gerivel(item_selecionado["id"], ativo=False)
+            st.success("Memória desativada.")
+            st.rerun()
+    with acao_colunas[2]:
+        if st.button("Remover", key="remover_memoria"):
+            memory.atualizar_memoria_gerivel(item_selecionado["id"], remover=True)
+            st.success("Memória removida.")
+            st.rerun()
+else:
+    st.info("Ainda não existem memórias AI geríveis.")
+
 st.subheader("Histórico de feedback")
 feedback = memoria.get("historico_feedback", [])
 if feedback:

@@ -56,6 +56,7 @@ class MemoryManager:
                     ensure_ascii=False,
                 )
                 self._normalizar_entradas_memoria(memoria)
+                self._sincronizar_listas_ativas(memoria)
                 depois = json.dumps(
                     (memoria.get("padroes_atleta_entradas"), memoria.get("regras_estilo_entradas")),
                     sort_keys=True,
@@ -94,6 +95,19 @@ class MemoryManager:
                                        "expira_em": None, "ativo": True, "origem": "legado"})
                     textos.add(texto)
             memoria[key] = existentes
+        return memoria
+
+    @staticmethod
+    def _sincronizar_listas_ativas(memoria):
+        """Mantém as listas legadas usadas pelos prompts alinhadas com o estado."""
+        for legacy, key in (("padroes_atleta", "padroes_atleta_entradas"),
+                            ("regras_estilo", "regras_estilo_entradas")):
+            entradas = memoria.get(key, [])
+            memoria[legacy] = [
+                entrada.get("conteudo", entrada.get("texto", ""))
+                for entrada in entradas
+                if isinstance(entrada, dict) and entrada.get("ativo", True)
+            ]
         return memoria
 
     def guardar_memoria(self, dados: dict):
@@ -180,6 +194,72 @@ class MemoryManager:
             regras.append(nova_regra)
             memoria["regras_estilo"] = regras
             self.guardar_memoria(memoria)
+
+    def listar_memorias_geriveis(self) -> list[dict]:
+        """Lista padrões e regras com estado de ativação e identificador estável."""
+        memoria = self.carregar_memoria()
+        resultado = []
+        for categoria, chave in (
+            ("Padrão do atleta", "padroes_atleta_entradas"),
+            ("Regra de análise", "regras_estilo_entradas"),
+        ):
+            for indice, entrada in enumerate(memoria.get(chave, [])):
+                if isinstance(entrada, dict):
+                    texto = entrada.get("conteudo", entrada.get("texto", ""))
+                    ativo = entrada.get("ativo", True)
+                else:
+                    texto = str(entrada)
+                    ativo = True
+                resultado.append({
+                    "id": f"{chave}:{indice}",
+                    "categoria": categoria,
+                    "texto": texto,
+                    "ativo": bool(ativo),
+                    "origem": entrada.get("origem", "manual") if isinstance(entrada, dict) else "legado",
+                })
+        return resultado
+
+    def atualizar_memoria_gerivel(self, memoria_id: str, *, ativo: bool | None = None, remover: bool = False):
+        """Ativa, desativa ou remove uma memória sem alterar o feedback histórico."""
+        chave, separador, indice_texto = memoria_id.partition(":")
+        if not separador or chave not in {"padroes_atleta_entradas", "regras_estilo_entradas"}:
+            raise ValueError("Identificador de memória inválido.")
+        try:
+            indice = int(indice_texto)
+        except ValueError as exc:
+            raise ValueError("Índice de memória inválido.") from exc
+        memoria = self.carregar_memoria()
+        entradas = memoria.get(chave, [])
+        if indice < 0 or indice >= len(entradas):
+            raise ValueError("Memória não encontrada.")
+        entrada_original = entradas[indice]
+        if remover:
+            entradas.pop(indice)
+            texto_removido = (
+                entrada_original.get("conteudo", entrada_original.get("texto", ""))
+                if isinstance(entrada_original, dict)
+                else str(entrada_original)
+            )
+            legacy = "padroes_atleta" if chave == "padroes_atleta_entradas" else "regras_estilo"
+            memoria[legacy] = [
+                valor for valor in memoria.get(legacy, [])
+                if str(valor) != str(texto_removido)
+            ]
+        else:
+            entrada = entradas[indice]
+            if not isinstance(entrada, dict):
+                entrada = {
+                    "conteudo": str(entrada),
+                    "criado_em": datetime.now().isoformat(timespec="seconds"),
+                    "expira_em": None,
+                    "origem": "legado",
+                }
+                entradas[indice] = entrada
+            if ativo is not None:
+                entrada["ativo"] = bool(ativo)
+        memoria[chave] = entradas
+        self._sincronizar_listas_ativas(memoria)
+        self.guardar_memoria(memoria)
 
     def adicionar_feedback(
         self,
