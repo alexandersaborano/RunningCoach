@@ -48,7 +48,17 @@ if perfil:
     colunas[1].metric("Limiar", f"{perfil.get('lthr', '--')} bpm")
     colunas[2].metric("FC repouso", f"{perfil.get('resting_hr', '--')} bpm")
     st.write("Zonas de FC:", perfil.get("zonas_hr", []))
-    st.caption("As zonas sincronizadas são apresentadas sem substituir o método configurado no Garmin.")
+    st.caption(
+        "Origem: "
+        f"{perfil.get('zonas_hr_origem', 'desconhecida')} · "
+        f"Método: {perfil.get('zonas_hr_metodo', 'desconhecido')}"
+    )
+    if perfil.get("zonas_hr_nomes"):
+        st.write("Nomes das zonas:", perfil["zonas_hr_nomes"])
+    st.caption(
+        "As zonas sincronizadas são apresentadas sem substituir o método "
+        "configurado no Garmin."
+    )
     try:
         zonas_hrr = calcular_zonas_hrr(perfil.get("max_hr"), perfil.get("resting_hr"))
     except ValueError:

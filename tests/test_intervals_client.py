@@ -41,6 +41,35 @@ class IntervalsClientTests(unittest.TestCase):
                 ):
                     self.assertEqual(IntervalsClient().obter_perfil_e_zonas(), cached)
 
+    def test_maps_run_sport_settings_without_assuming_hrr(self):
+        response = Mock(status_code=200)
+        response.json.return_value = {
+            "icu_max_hr": 190,
+            "icu_lthr": 165,
+            "icu_resting_hr": 52,
+            "sportSettings": [{
+                "types": ["Run"],
+                "max_hr": 188,
+                "lthr": 162,
+                "resting_hr": 51,
+                "hr_zones": [120, 145, 162, 175, 188],
+                "hr_zone_names": ["Z1", "Z2", "Z3", "Z4", "Z5"],
+                "hr_load_type": "LTHR",
+            }],
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            profile_path = Path(directory) / "profile.json"
+            with patch("core.intervals_client.FICHEIRO_PERFIL", profile_path):
+                with patch("core.intervals_client.requests.get", return_value=response):
+                    profile = IntervalsClient().obter_perfil_e_zonas()
+
+        self.assertEqual(profile["max_hr"], 188)
+        self.assertEqual(profile["lthr"], 162)
+        self.assertEqual(profile["resting_hr"], 51)
+        self.assertEqual(profile["zonas_hr_origem"], "sportSettings:Run")
+        self.assertEqual(profile["zonas_hr_metodo"], "LTHR")
+        self.assertEqual(profile["zonas_hr_nomes"], ["Z1", "Z2", "Z3", "Z4", "Z5"])
+
 
 if __name__ == "__main__":
     unittest.main()

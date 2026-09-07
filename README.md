@@ -11,6 +11,15 @@ Esta aplicação foi desenhada para utilização local. Copia `.env.example` par
 Os ficheiros da pasta `data/` contêm o perfil, histórico, recuperação, feedback
 e análises AI. Permanecem no computador e não devem ser publicados no GitHub.
 
+### Zonas de frequência cardíaca
+
+O perfil sincronizado usa `GET /api/v1/athlete/{athlete_id}` do Intervals.icu.
+`icu_max_hr`, `icu_lthr` e `icu_resting_hr` são métricas globais em bpm.
+As zonas de corrida podem vir de `sportSettings.hr_zones`, acompanhadas por
+`hr_zone_names` e `hr_load_type`. A app preserva a origem e o método e não
+assume que essas zonas são calculadas por `%HRR`; as zonas Karvonen são
+apresentadas separadamente.
+
 ## Executar localmente
 
 ```powershell

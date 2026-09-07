@@ -48,7 +48,7 @@ class IntervalsClient:
         return self._guardar_perfil(perfil)
 
     def obter_perfil_e_zonas(self):
-        """Obtém os dados do perfil do atleta e extrai as zonas de FC."""
+        """Obtém métricas e configuração de FC, preservando origem e método."""
         try:
             url = f"{self.base_url}/athlete/{self.athlete_id}"
             response = requests.get(url, auth=self.auth, timeout=10)
@@ -70,23 +70,36 @@ class IntervalsClient:
                     None,
                 )
 
-                max_hr = data.get("icu_max_hr", 190)
-                lthr = data.get("icu_lthr", 165)
+                max_hr = data.get("icu_max_hr")
+                lthr = data.get("icu_lthr")
+                resting_hr = data.get("icu_resting_hr")
                 zonas = []
+                zona_nomes = []
+                zona_metodo = None
+                zona_origem = "athlete"
 
                 if run_settings:
                     max_hr = run_settings.get("max_hr", max_hr)
                     lthr = run_settings.get("lthr", lthr)
-                    zonas = run_settings.get("hr_zones", [])
+                    resting_hr = run_settings.get("resting_hr", resting_hr)
+                    zonas = run_settings.get("hr_zones") or []
+                    zona_nomes = run_settings.get("hr_zone_names") or []
+                    zona_metodo = run_settings.get("hr_load_type")
+                    zona_origem = "sportSettings:Run"
 
                 if not zonas:
-                    zonas = data.get("icu_hr_zones", [])
+                    zonas = data.get("icu_hr_zones") or []
+                    if zonas:
+                        zona_origem = "athlete:icu_hr_zones"
 
                 perfil = {
                     "max_hr": max_hr,
                     "lthr": lthr,
-                    "resting_hr": data.get("icu_resting_hr", 50),
+                    "resting_hr": resting_hr,
                     "zonas_hr": zonas,
+                    "zonas_hr_nomes": zona_nomes,
+                    "zonas_hr_metodo": zona_metodo or "desconhecido",
+                    "zonas_hr_origem": zona_origem,
                 }
                 return self._guardar_perfil(perfil)
             return self._carregar_perfil_guardado()
