@@ -11,11 +11,16 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 from datetime import date, datetime
-from config.settings import HISTORICO_DIR
+from config.settings import DATA_DIR, HISTORICO_DIR
 from core.intervals_client import IntervalsClient
 from core.memory_manager import MemoryManager
 from core.ai_coach import AICoach
-from core.training_comparison import construir_comparacao
+from core.planned_workouts import PlannedWorkoutStore
+from core.training_comparison import (
+    construir_comparacao,
+    encontrar_prescricao_local,
+    extrair_prescricao_intervals,
+)
 from ui.theme import aplicar_tema, cabecalho, navegacao
 from ui.table_actions import tabela_com_acoes
 
@@ -29,6 +34,7 @@ navegacao()
 
 client = IntervalsClient()
 memory = MemoryManager()
+planned_workout_store = PlannedWorkoutStore(DATA_DIR / "treinos_planeados.json")
 coach = AICoach(memory_manager=memory)
 if not coach.disponivel:
     st.warning(f"Análise AI indisponível: {coach.config_error}")
@@ -480,7 +486,32 @@ if st.session_state.get("pesquisa_efetuada"):
         tabela_com_acoes(df_laps, key="laps_tabela", file_stem="laps")
         
         zonas_str = "\n".join([f"Z{i}: {z} bpm" for i, z in enumerate(perfil.get('zonas_hr', []), 1)]) if perfil else "Zonas não disponíveis."
-        descricao_plano = corrida.get("description") or corrida.get("workout_doc", {}).get("description") or "Sem prescrição."
+        data_corrida = corrida.get("start_date_local", "")
+        descricao_intervals = extrair_prescricao_intervals(corrida)
+        descricao_local = encontrar_prescricao_local(
+            planned_workout_store.list(),
+            data_corrida,
+        )
+        descricao_inicial = descricao_intervals or descricao_local
+        origem_prescricao = (
+            "Intervals.icu"
+            if descricao_intervals
+            else "treino planeado local"
+            if descricao_local
+            else "manual"
+        )
+        prescricao_key = f"prescricao_{corrida.get('id')}"
+        if prescricao_key not in st.session_state:
+            st.session_state[prescricao_key] = descricao_inicial
+        descricao_plano = st.text_area(
+            "Prescrição do treino",
+            key=prescricao_key,
+            help=(
+                f"Origem detetada: {origem_prescricao}. "
+                "Podes corrigir ou completar antes da análise AI."
+            ),
+            placeholder="Ex.: 15 min fácil + 6 x 1 km a ritmo de 10 km.",
+        ).strip()
         comparacao_treino = construir_comparacao(corrida, descricao_plano)
         
         relatorio_detalhado = f"""

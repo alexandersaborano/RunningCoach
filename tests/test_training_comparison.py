@@ -1,9 +1,26 @@
 import unittest
 
-from core.training_comparison import construir_comparacao
+from core.training_comparison import (
+    construir_comparacao,
+    encontrar_prescricao_local,
+    extrair_prescricao_intervals,
+)
 
 
 class TrainingComparisonTests(unittest.TestCase):
+    def test_extracts_intervals_and_local_prescriptions(self):
+        self.assertEqual(
+            extrair_prescricao_intervals({"workout_doc": {"description": "4 x 1 km"}}),
+            "4 x 1 km",
+        )
+        self.assertEqual(
+            encontrar_prescricao_local(
+                [{"date": "2026-09-07", "name": "Séries", "prescription": "6 x 800 m"}],
+                "2026-09-07T08:00:00",
+            ),
+            "Séries\n6 x 800 m",
+        )
+
     def test_builds_prescription_and_actual_metrics(self):
         comparison = construir_comparacao(
             {
