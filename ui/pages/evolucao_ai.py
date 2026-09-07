@@ -10,6 +10,7 @@ if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
 import streamlit as st
+import pandas as pd
 
 from config.settings import FICHEIRO_PERFIL
 from core.ai_coach import AICoach
@@ -21,6 +22,7 @@ from core.ai_evolution import (
 )
 from core.memory_manager import MemoryManager
 from ui.theme import aplicar_tema, cabecalho, navegacao
+from ui.table_actions import tabela_com_acoes
 
 
 st.set_page_config(page_title="Evolução AI", page_icon="🤖", layout="wide")
@@ -162,4 +164,8 @@ for item in reversed(memory.carregar_resumos_semanais()[-8:]):
 avaliacoes = memory.carregar_resultados_recomendacoes()
 if avaliacoes:
     st.subheader("Avaliações guardadas")
-    st.dataframe(avaliacoes, width="stretch")
+    tabela_com_acoes(
+        pd.DataFrame(avaliacoes),
+        key="evolucao_avaliacoes",
+        file_stem="avaliacoes_recomendacoes",
+    )

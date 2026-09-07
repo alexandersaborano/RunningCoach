@@ -26,6 +26,7 @@ from core.performance_analytics import (
 )
 from core.planned_workouts import PlannedWorkoutStore
 from ui.theme import aplicar_tema, cabecalho, navegacao
+from ui.table_actions import tabela_com_acoes
 
 
 st.set_page_config(page_title="Performance", page_icon="📈", layout="wide")
@@ -126,7 +127,7 @@ if semanas:
     cards[2].metric("Carga", f"{metricas['load']:.0f} TSS")
     cards[3].metric("Pace médio", metricas["average_pace_min_km"] or "—")
     cards[4].metric("FC média", metricas["average_heartrate"] or "—")
-    st.dataframe(weekly_df, width="stretch")
+    tabela_com_acoes(weekly_df, key="performance_semanal", file_stem="performance_semanal")
 
     fig = go.Figure()
     fig.add_trace(go.Bar(x=weekly_df["Semana"], y=weekly_df["distance_km"], name="Distância (km)"))
@@ -142,13 +143,14 @@ if semanas:
         atual = [item for item in filtradas if str(item.get("data", ""))[:10] >= semanas[-1]["week_start"]]
         anterior = [item for item in filtradas if str(item.get("data", ""))[:10] < semanas[-1]["week_start"]]
         comparacao = compare_equivalent_periods(atual, anterior)
-        st.subheader("Comparação de blocos")
-        st.dataframe(
+        tabela_com_acoes(
             pd.DataFrame([
                 {"Métrica": chave, "Atual": valor, "Anterior": comparacao["previous"].get(chave), "Variação": comparacao["delta"].get(chave)}
                 for chave, valor in comparacao["current"].items()
             ]),
-            width="stretch",
+            key="performance_comparacao",
+            file_stem="comparacao_blocos",
+            title="Comparação de blocos",
         )
 else:
     st.info("Não existem dados suficientes para os filtros selecionados.")

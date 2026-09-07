@@ -11,6 +11,7 @@ if str(BASE_DIR) not in sys.path:
 import streamlit as st
 
 from core.intervals_client import IntervalsClient
+from core.heart_rate_zones import calcular_zonas_hrr
 from ui.theme import aplicar_tema, cabecalho, navegacao
 
 
@@ -47,6 +48,13 @@ if perfil:
     colunas[1].metric("Limiar", f"{perfil.get('lthr', '--')} bpm")
     colunas[2].metric("FC repouso", f"{perfil.get('resting_hr', '--')} bpm")
     st.write("Zonas de FC:", perfil.get("zonas_hr", []))
+    st.caption("As zonas sincronizadas são apresentadas sem substituir o método configurado no Garmin.")
+    try:
+        zonas_hrr = calcular_zonas_hrr(perfil.get("max_hr"), perfil.get("resting_hr"))
+    except ValueError:
+        zonas_hrr = []
+    if zonas_hrr:
+        st.write("Limites calculados por %HRR (Karvonen):", zonas_hrr)
 else:
     st.warning("Não foi possível carregar o perfil do Intervals.icu.")
 

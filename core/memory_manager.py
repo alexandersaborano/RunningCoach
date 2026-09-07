@@ -240,6 +240,14 @@ class MemoryManager:
                 guardadas += 1
         return guardadas
 
+    def ids_sessoes_existentes(self) -> set[str]:
+        """Devolve os identificadores já importados para pré-filtrar resultados."""
+        return {
+            str(sessao.get("atividade_id")).strip()
+            for sessao in self.carregar_historico_sessoes()
+            if str(sessao.get("atividade_id", "")).strip()
+        }
+
     def guardar_analise_global(self, analise: dict):
         """Guarda uma análise global e todo o contexto usado para a produzir."""
         analise = validate_global_analysis(analise)

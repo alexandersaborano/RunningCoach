@@ -1,5 +1,4 @@
 import sys
-from io import BytesIO
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -18,6 +17,7 @@ from core.memory_manager import MemoryManager
 from core.ai_coach import AICoach
 from core.training_comparison import construir_comparacao
 from ui.theme import aplicar_tema, cabecalho, navegacao
+from ui.table_actions import tabela_com_acoes
 
 st.set_page_config(
     page_title="Sessões | Atleta AI Coach",
@@ -136,7 +136,16 @@ if historico:
     historico_df["Data"] = pd.to_datetime(historico_df["Data"], errors="coerce")
     historico_df = historico_df.dropna(subset=["Data"])
     if not historico_df.empty:
-        filtro_colunas = st.columns(4)
+        def reset_historico_filtros():
+            for chave in ("historico_periodo", "historico_tipo", "historico_distancia"):
+                st.session_state.pop(chave, None)
+
+        st.button(
+            "↺ Reset aos filtros",
+            key="reset_graficos",
+            on_click=reset_historico_filtros,
+        )
+        filtro_colunas = st.columns(3)
         data_min = historico_df["Data"].min().date()
         data_max = historico_df["Data"].max().date()
         with filtro_colunas[0]:
@@ -164,10 +173,6 @@ if historico:
                     value=(distancia_min, distancia_max),
                     key="historico_distancia",
                 )
-        with filtro_colunas[3]:
-            if st.button("↺ Repor zoom dos gráficos", key="reset_graficos"):
-                st.session_state["graficos_reset"] = st.session_state.get("graficos_reset", 0) + 1
-
         if isinstance(periodo, tuple) and len(periodo) == 2:
             historico_filtrado = historico_df[
                 (historico_df["Data"].dt.date >= periodo[0])
@@ -241,10 +246,18 @@ if historico:
             resumo_colunas = st.columns(2)
             with resumo_colunas[0]:
                 st.caption("Semanal")
-                st.dataframe(semanal, width="stretch")
+                tabela_com_acoes(
+                    semanal.reset_index(),
+                    key="historico_semanal",
+                    file_stem="historico_semanal",
+                )
             with resumo_colunas[1]:
                 st.caption("Mensal")
-                st.dataframe(mensal, width="stretch")
+                tabela_com_acoes(
+                    mensal.reset_index(),
+                    key="historico_mensal",
+                    file_stem="historico_mensal",
+                )
 
             ultimos_7 = historico_df[
                 historico_df["Data"] >= historico_df["Data"].max() - pd.Timedelta(days=7)
@@ -281,24 +294,13 @@ if historico:
                 st.success("Carga e recuperação sem sinais relevantes de fadiga.")
             else:
                 st.info("Ainda não há carga TSS suficiente para estimar fadiga.")
-            st.dataframe(evolucao.reset_index(), width="stretch")
-
             exportar = historico_filtrado.drop(columns=["Semana"], errors="ignore").copy()
             exportar["Data"] = exportar["Data"].dt.strftime("%Y-%m-%d")
-            csv_bytes = exportar.to_csv(index=False).encode("utf-8-sig")
-            excel_buffer = BytesIO()
-            exportar.to_excel(excel_buffer, index=False, engine="openpyxl")
-            st.download_button(
-                "⬇️ Exportar histórico CSV",
-                data=csv_bytes,
-                file_name="historico_atleta.csv",
-                mime="text/csv",
-            )
-            st.download_button(
-                "⬇️ Exportar histórico Excel",
-                data=excel_buffer.getvalue(),
-                file_name="historico_atleta.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            tabela_com_acoes(
+                exportar,
+                key="historico_tabela",
+                file_stem="historico_atleta",
+                title="Tabela de sessões filtradas",
             )
 
         if st.button(
@@ -369,13 +371,19 @@ def atividade_para_historico(corrida: dict) -> dict:
 if st.button("⬇️ Importar histórico antigo do Intervals.icu"):
     with st.spinner("A importar sessões antigas..."):
         corridas_importadas = client.obter_corridas(str_inicio, str_fim)
+        ids_existentes = memory.ids_sessoes_existentes()
         sessoes = [
             atividade_para_historico(corrida)
             for corrida in (corridas_importadas or [])
-            if corrida.get("id")
+            if corrida.get("id") and str(corrida["id"]) not in ids_existentes
         ]
         quantidade = memory.guardar_sessoes_importadas(sessoes)
-        st.success(f"{quantidade} sessão(ões) nova(s) importada(s).")
+        total_encontrado = len(corridas_importadas or [])
+        ignoradas = total_encontrado - len(sessoes)
+        st.success(
+            f"{quantidade} sessão(ões) nova(s) importada(s); "
+            f"{ignoradas} já existente(s) ignorada(s)."
+        )
         if quantidade:
             st.rerun()
 
@@ -467,7 +475,7 @@ if st.session_state.get("pesquisa_efetuada"):
             laps_txt_list.append(f"Lap {idx} | {label} | {dist_km} km | {tempo_str} | {pace_str} | FC Média: {fc_avg} bpm | FC Máx: {fc_max} bpm")
         
         df_laps = pd.DataFrame(laps_data)
-        st.dataframe(df_laps)
+        tabela_com_acoes(df_laps, key="laps_tabela", file_stem="laps")
         
         zonas_str = "\n".join([f"Z{i}: {z} bpm" for i, z in enumerate(perfil.get('zonas_hr', []), 1)]) if perfil else "Zonas não disponíveis."
         descricao_plano = corrida.get("description") or corrida.get("workout_doc", {}).get("description") or "Sem prescrição."
@@ -492,9 +500,10 @@ MÉTRICAS POR LAP:
             st.markdown("**Prescrição**")
             st.write(comparacao_treino["prescricao"])
             st.markdown("**Execução registada**")
-            st.dataframe(
+            tabela_com_acoes(
                 pd.DataFrame([comparacao_treino["realizado"]]),
-                width="stretch",
+                key="comparacao_treino_tabela",
+                file_stem="comparacao_treino",
             )
         
         if st.button(

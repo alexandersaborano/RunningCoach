@@ -16,6 +16,7 @@ from config.settings import DATA_DIR
 from core.memory_manager import MemoryManager
 from core.planned_workouts import PlannedWorkoutError, PlannedWorkoutStore, merge_planned_completed
 from ui.theme import aplicar_tema, cabecalho, navegacao
+from ui.table_actions import tabela_com_acoes
 
 
 st.set_page_config(page_title="Calendário", page_icon="🗓️", layout="wide")
@@ -45,9 +46,9 @@ with st.form("novo_treino_planeado"):
     criar = st.form_submit_button("Guardar treino futuro")
 if criar:
     try:
-        store.create({
+        workout = store.create({
             "date": data_treino.isoformat(),
-            "name": nome,
+            "name": nome.strip(),
             "workout_type": tipo,
             "distance_km": distancia or None,
             "duration_min": duracao or None,
@@ -56,7 +57,7 @@ if criar:
     except PlannedWorkoutError as error:
         st.error(str(error))
     else:
-        st.success("Treino futuro guardado.")
+        st.success(f"Treino futuro guardado: {workout['name']} ({workout['date']}).")
         st.rerun()
 
 planeados = store.list()
@@ -83,7 +84,11 @@ if calendario:
                 else "—"
             ),
         })
-    st.dataframe(pd.DataFrame(linhas), width="stretch")
+    tabela_com_acoes(
+        pd.DataFrame(linhas),
+        key="calendario_tabela",
+        file_stem="calendario",
+    )
 else:
     st.info("Ainda não existem treinos planeados ou realizados.")
 

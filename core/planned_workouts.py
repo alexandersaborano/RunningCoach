@@ -55,7 +55,12 @@ class PlannedWorkoutStore:
 
     def _write(self, workouts: list[dict[str, Any]]) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.write_text(json.dumps(workouts, ensure_ascii=False, indent=2), encoding="utf-8")
+        temporary_path = self.path.with_suffix(f"{self.path.suffix}.tmp")
+        temporary_path.write_text(
+            json.dumps({"workouts": workouts}, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        temporary_path.replace(self.path)
 
     def list(self) -> list[dict[str, Any]]:
         return self._read()

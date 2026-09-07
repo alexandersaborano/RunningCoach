@@ -9,9 +9,11 @@ if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
 import streamlit as st
+import pandas as pd
 
 from core.memory_manager import MemoryManager
 from ui.theme import aplicar_tema, cabecalho, navegacao
+from ui.table_actions import tabela_com_acoes
 
 
 st.set_page_config(page_title="Memória AI", page_icon="🧠", layout="wide")
@@ -60,13 +62,21 @@ with st.expander("Adicionar memória manual"):
 st.subheader("Histórico de feedback")
 feedback = memoria.get("historico_feedback", [])
 if feedback:
-    st.dataframe(feedback, width="stretch")
+    tabela_com_acoes(
+        pd.DataFrame(feedback),
+        key="memoria_feedback",
+        file_stem="feedback",
+    )
 else:
     st.info("Ainda não existem feedbacks guardados.")
 
 st.subheader("Registos de recuperação")
 recuperacao = memory.carregar_recuperacao()
 if recuperacao:
-    st.dataframe(list(recuperacao.values()), width="stretch")
+    tabela_com_acoes(
+        pd.DataFrame(list(recuperacao.values())),
+        key="memoria_recuperacao",
+        file_stem="recuperacao",
+    )
 else:
     st.info("Ainda não existem registos de recuperação.")
