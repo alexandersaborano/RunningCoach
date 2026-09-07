@@ -1,6 +1,5 @@
 import json
 import sys
-from io import BytesIO
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -20,8 +19,6 @@ from core.performance_analytics import (
     aggregate_weekly,
     compare_equivalent_periods,
     consolidated_export_data,
-    export_csv,
-    export_json,
     filter_sessions,
 )
 from core.planned_workouts import PlannedWorkoutStore
@@ -162,16 +159,8 @@ registos = consolidated_export_data(
     feedback=memoria.get("historico_feedback", []),
     planned=planeados,
 )
-json_bytes = export_json(registos).encode("utf-8")
-csv_bytes = export_csv(registos).encode("utf-8-sig")
-excel = BytesIO()
-pd.DataFrame(registos).to_excel(excel, index=False, engine="openpyxl")
-export_colunas = st.columns(3)
-export_colunas[0].download_button("⬇️ Exportar JSON", json_bytes, "atleta_consolidado.json", "application/json")
-export_colunas[1].download_button("⬇️ Exportar CSV", csv_bytes, "atleta_consolidado.csv", "text/csv")
-export_colunas[2].download_button(
-    "⬇️ Exportar Excel",
-    excel.getvalue(),
-    "atleta_consolidado.xlsx",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+tabela_com_acoes(
+    pd.DataFrame(registos),
+    key="performance_consolidado",
+    file_stem="atleta_consolidado",
 )

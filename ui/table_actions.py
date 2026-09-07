@@ -88,28 +88,30 @@ def tabela_com_acoes(
         descending=descending,
         columns=columns,
     )
-    st.dataframe(visible, width="stretch", hide_index=True)
-
     csv_bytes = visible.to_csv(index=False).encode("utf-8-sig")
     excel = BytesIO()
     visible.to_excel(excel, index=False, engine="openpyxl")
-    downloads = st.columns(3)
-    downloads[0].download_button(
-        "⬇️ CSV",
+    downloads = st.columns([8, 1, 1, 1])
+    downloads[1].download_button(
+        "",
         csv_bytes,
         f"{file_stem}.csv",
         "text/csv",
         key=f"{key}_csv",
+        icon=":material/download:",
+        help="Exportar tabela em CSV",
     )
-    downloads[1].download_button(
-        "⬇️ Excel",
+    downloads[2].download_button(
+        "",
         excel.getvalue(),
         f"{file_stem}.xlsx",
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         key=f"{key}_excel",
+        icon=":material/table_view:",
+        help="Exportar tabela em Excel",
     )
-    downloads[2].download_button(
-        "⬇️ JSON",
+    downloads[3].download_button(
+        "",
         json.dumps(
             _json_records(visible),
             ensure_ascii=False,
@@ -118,5 +120,8 @@ def tabela_com_acoes(
         f"{file_stem}.json",
         "application/json",
         key=f"{key}_json",
+        icon=":material/data_object:",
+        help="Exportar tabela em JSON",
     )
+    st.dataframe(visible, width="stretch", hide_index=True)
     return visible

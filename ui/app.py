@@ -136,9 +136,16 @@ if historico:
     historico_df["Data"] = pd.to_datetime(historico_df["Data"], errors="coerce")
     historico_df = historico_df.dropna(subset=["Data"])
     if not historico_df.empty:
+        data_min = historico_df["Data"].min().date()
+        data_max = historico_df["Data"].max().date()
+        distancia_min = float(historico_df["Distância (km)"].min())
+        distancia_max = float(historico_df["Distância (km)"].max())
+        tipos = ["Todos"] + sorted(historico_df["Tipo"].fillna("Desconhecido").unique())
+
         def reset_historico_filtros():
-            for chave in ("historico_periodo", "historico_tipo", "historico_distancia"):
-                st.session_state.pop(chave, None)
+            st.session_state["historico_periodo"] = (data_min, data_max)
+            st.session_state["historico_tipo"] = "Todos"
+            st.session_state["historico_distancia"] = (distancia_min, distancia_max)
 
         st.button(
             "↺ Reset aos filtros",
@@ -146,8 +153,6 @@ if historico:
             on_click=reset_historico_filtros,
         )
         filtro_colunas = st.columns(3)
-        data_min = historico_df["Data"].min().date()
-        data_max = historico_df["Data"].max().date()
         with filtro_colunas[0]:
             periodo = st.date_input(
                 "Período do histórico",
@@ -157,11 +162,8 @@ if historico:
                 key="historico_periodo",
             )
         with filtro_colunas[1]:
-            tipos = ["Todos"] + sorted(historico_df["Tipo"].fillna("Desconhecido").unique())
             tipo_selecionado = st.selectbox("Tipo de treino", tipos, key="historico_tipo")
         with filtro_colunas[2]:
-            distancia_min = float(historico_df["Distância (km)"].min())
-            distancia_max = float(historico_df["Distância (km)"].max())
             if distancia_min == distancia_max:
                 st.caption(f"Distância: {distancia_min:.2f} km")
                 distancia = (distancia_min, distancia_max)
