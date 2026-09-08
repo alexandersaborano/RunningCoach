@@ -10,7 +10,7 @@ if str(BASE_DIR) not in sys.path:
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from config.settings import DATA_DIR, HISTORICO_DIR
 from core.intervals_client import IntervalsClient
 from core.memory_manager import MemoryManager
@@ -39,6 +39,15 @@ coach = AICoach(memory_manager=memory)
 if not coach.disponivel:
     st.warning(f"Análise AI indisponível: {coach.config_error}")
 
+if "wellness_sync_done" not in st.session_state:
+    if client.api_key and str(client.athlete_id) != "0":
+        wellness_inicio = (date.today() - timedelta(days=30)).isoformat()
+        wellness_fim = date.today().isoformat()
+        wellness = client.obter_bem_estar(wellness_inicio, wellness_fim)
+        if wellness:
+            memory.sincronizar_bem_estar(wellness)
+    st.session_state["wellness_sync_done"] = True
+
 # ==============================================================================
 # BARRA LATERAL (SIDEBAR)
 # ==============================================================================
@@ -51,6 +60,13 @@ recuperacao = int(recuperacao_guardada.get("recuperacao", 7))
 fc_repouso_atual = int(
     recuperacao_guardada.get("fc_repouso", (perfil or {}).get("resting_hr") or 0)
 )
+if recuperacao_guardada:
+    origem = recuperacao_guardada.get("origem", "manual")
+    sincronizado_em = recuperacao_guardada.get("sincronizado_em")
+    st.sidebar.caption(
+        f"Wellness: {origem}"
+        + (f" · sincronizado {sincronizado_em}" if sincronizado_em else "")
+    )
 
 if perfil:
     st.sidebar.success("Zonas de FC Carregadas")

@@ -122,8 +122,17 @@ else:
 st.subheader("Registos de recuperação")
 recuperacao = memory.carregar_recuperacao()
 if recuperacao:
+    st.caption("A coluna origem distingue registos manuais de dados sincronizados; "
+               "sincronizado_em mostra a última atualização remota.")
     tabela_com_acoes(
-        pd.DataFrame(list(recuperacao.values())),
+        pd.DataFrame([
+            {
+                **item,
+                "origem": item.get("origem", "manual"),
+                "sincronizado_em": item.get("sincronizado_em"),
+            }
+            for item in recuperacao.values()
+        ]),
         key="memoria_recuperacao",
         file_stem="recuperacao",
     )

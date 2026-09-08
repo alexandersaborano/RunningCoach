@@ -4,6 +4,7 @@ from pathlib import Path
 import requests
 from config.settings import ATHLETE_ID, FICHEIRO_PERFIL, INTERVALS_API_KEY
 from core.data_validation import validate_profile
+from core.data_validation import validate_wellness_records
 from core.heart_rate_zones import calcular_zonas_hrr
 from core.safe_logging import get_logger
 
@@ -166,7 +167,6 @@ class IntervalsClient:
                 atividades = response.json()
                 if not isinstance(atividades, list):
                     return []
-
                 corridas = [
                     a
                     for a in atividades
@@ -181,6 +181,60 @@ class IntervalsClient:
         except Exception as e:
             print(f"[EXCEÇÃO] Erro ao procurar corridas: {e}")
             return []
+
+    def obter_bem_estar(self, data_inicio: str, data_fim: str):
+        """Obtém e normaliza os registos de wellness do Intervals.icu."""
+        if not data_inicio or not data_fim:
+            raise ValueError("É necessário indicar o intervalo de wellness.")
+        url = f"{self.base_url}/athlete/{self.athlete_id}/wellness"
+        try:
+            response = requests.get(
+                url, auth=self.auth,
+                params={"oldest": data_inicio, "newest": data_fim}, timeout=10
+            )
+            if response.status_code != 200:
+                self.logger.warning("Wellness devolveu HTTP %s", response.status_code)
+                return []
+            payload = response.json()
+        except (requests.RequestException, ValueError) as error:
+            self.logger.warning("Não foi possível obter wellness: %s", error)
+            return []
+        if not isinstance(payload, list):
+            self.logger.warning("Resposta de wellness inválida: esperada uma lista")
+            return []
+        records = []
+        for item in payload:
+            if not isinstance(item, dict):
+                continue
+            data = item.get("date") or item.get("data")
+            if not isinstance(data, str) or not data.strip():
+                continue
+            record = {"data": data[:10], "origem": "intervals_icu"}
+            for source, target in (
+                ("sleepSecs", "sono_horas"), ("sleep_hours", "sono_horas"),
+                ("sleepScore", "qualidade_sono"), ("readiness", "recuperacao"),
+                ("recovery", "recuperacao"), ("restingHR", "fc_repouso"),
+                ("resting_hr", "fc_repouso"), ("hrv", "hrv"),
+                ("fatigue", "fadiga"), ("soreness", "dor_muscular"),
+                ("stress", "stress"), ("mood", "humor"), ("weight", "peso_kg"),
+            ):
+                if source in item and item[source] is not None:
+                    value = item[source]
+                    if source == "sleepSecs":
+                        try:
+                            value = float(value) / 3600
+                        except (TypeError, ValueError):
+                            continue
+                    record[target] = value
+            record["intervals_id"] = item.get("id", record["data"])
+            records.append(record)
+        try:
+            return validate_wellness_records(records)
+        except ValueError as error:
+            self.logger.warning("Registos de wellness inválidos: %s", error)
+            return []
+
+    obter_wellness = obter_bem_estar
 
     def obter_laps_atividade(self, activity_id: str):
         """

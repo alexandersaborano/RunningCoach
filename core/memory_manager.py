@@ -175,6 +175,33 @@ class MemoryManager:
         with open(FICHEIRO_RECUPERACAO, "w", encoding="utf-8") as ficheiro:
             json.dump(dados, ficheiro, indent=4, ensure_ascii=False)
 
+    def sincronizar_bem_estar(self, registos: list[dict]) -> int:
+        """Mescla wellness remoto, substituindo os valores da mesma data."""
+        from core.data_validation import validate_wellness_records
+
+        registos = validate_wellness_records(registos)
+        dados = self.carregar_recuperacao()
+        sincronizado_em = datetime.now().isoformat(timespec="seconds")
+        guardados = 0
+        for remoto in registos:
+            data = str(remoto["data"])[:10]
+            anterior = dict(remoto)
+            anterior["data"] = data
+            anterior["origem"] = "intervals_icu"
+            anterior["sincronizado_em"] = sincronizado_em
+            dados[data] = anterior
+            guardados += 1
+        if guardados:
+            validate_recovery(dados)
+            FICHEIRO_RECUPERACAO.parent.mkdir(parents=True, exist_ok=True)
+            with open(FICHEIRO_RECUPERACAO, "w", encoding="utf-8") as ficheiro:
+                json.dump(dados, ficheiro, indent=4, ensure_ascii=False)
+        return guardados
+
+    merge_wellness = sincronizar_bem_estar
+    sincronizar_wellness = sincronizar_bem_estar
+    mesclar_bem_estar = sincronizar_bem_estar
+
     def adicionar_padrao(self, novo_padrao: str):
         """Adiciona um novo padrão fisiológico/pessoal identificado à memória."""
         memoria = self.carregar_memoria()

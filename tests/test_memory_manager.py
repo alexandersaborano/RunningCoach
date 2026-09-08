@@ -78,6 +78,29 @@ class MemoryManagerTests(unittest.TestCase):
                 self.assertEqual(len(analyses), 1)
                 self.assertEqual(analyses[0]["atividade_ids"], ["a1"])
 
+    def test_wellness_sync_replaces_manual_values_for_same_date(self):
+        with tempfile.TemporaryDirectory() as directory:
+            recovery_path = Path(directory) / "recovery.json"
+            memory_path = Path(directory) / "memory.json"
+            with patch("core.memory_manager.FICHEIRO_RECUPERACAO", recovery_path):
+                manager = MemoryManager(memory_path)
+                manager.guardar_recuperacao("2026-09-08", 8, 9, 48)
+                self.assertEqual(manager.sincronizar_bem_estar([{
+                    "data": "2026-09-08", "sono_horas": 5,
+                    "recuperacao": 2, "fc_repouso": 60,
+                }]), 1)
+                synced_same_day = manager.carregar_recuperacao("2026-09-08")
+                self.assertEqual(synced_same_day["recuperacao"], 2)
+                self.assertEqual(synced_same_day["origem"], "intervals_icu")
+
+                self.assertEqual(manager.sincronizar_bem_estar([{
+                    "data": "2026-09-07", "sono_horas": 7.5,
+                    "recuperacao": 8, "origem": "intervals_icu",
+                }]), 1)
+                synced = manager.carregar_recuperacao("2026-09-07")
+                self.assertEqual(synced["origem"], "intervals_icu")
+                self.assertTrue(synced["sincronizado_em"])
+
 
 if __name__ == "__main__":
     unittest.main()

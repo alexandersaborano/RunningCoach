@@ -102,6 +102,19 @@ class IntervalsClientTests(unittest.TestCase):
         self.assertEqual(profile["zonas_hr_origem"], "calculado_localmente")
         self.assertIn("intervals_icu", profile["perfis_zonas"])
 
+    def test_fetches_and_normalizes_wellness(self):
+        response = Mock(status_code=200)
+        response.json.return_value = [{
+            "id": "w1", "date": "2026-09-08", "sleepSecs": 27000,
+            "readiness": 8, "restingHR": 49, "hrv": 62,
+        }]
+        with patch("core.intervals_client.requests.get", return_value=response) as request:
+            records = IntervalsClient().obter_bem_estar("2026-09-01", "2026-09-08")
+        self.assertEqual(records[0]["sono_horas"], 7.5)
+        self.assertEqual(records[0]["fc_repouso"], 49)
+        self.assertEqual(records[0]["origem"], "intervals_icu")
+        request.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -30,6 +30,21 @@ def validate_recovery(data: Any) -> dict:
     return result
 
 
+def validate_wellness_records(data: Any) -> list[dict]:
+    """Validate the minimal shape required for imported wellness records."""
+    if not isinstance(data, list):
+        raise DataValidationError("Bem-estar deve ser uma lista.")
+    result = []
+    for record in data:
+        if not isinstance(record, Mapping):
+            raise DataValidationError("Cada registo de bem-estar deve ser um objeto.")
+        item = dict(record)
+        if not str(item.get("data", "")).strip():
+            raise DataValidationError("Cada registo de bem-estar precisa de data.")
+        result.append(item)
+    return result
+
+
 def validate_session(data: Any) -> dict:
     result = _document(data, "Sessão")
     if not str(result.get("atividade_id", "")).strip():

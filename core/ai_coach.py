@@ -133,6 +133,9 @@ Se a prescrição não tiver dados mensuráveis, declara essa limitação explic
             f"sono {recuperacao_por_data.get(s.get('data', '')[:10], {}).get('sono_horas', 'N/A')} h | "
             f"recuperação {recuperacao_por_data.get(s.get('data', '')[:10], {}).get('recuperacao', 'N/A')}/10 | "
             f"FC repouso {recuperacao_por_data.get(s.get('data', '')[:10], {}).get('fc_repouso', 'N/A')} bpm"
+            f" | origem wellness {recuperacao_por_data.get(s.get('data', '')[:10], {}).get('origem', 'N/A')}"
+            f" | HRV {recuperacao_por_data.get(s.get('data', '')[:10], {}).get('hrv', 'N/A')}"
+            f" | qualidade sono {recuperacao_por_data.get(s.get('data', '')[:10], {}).get('qualidade_sono', 'N/A')}"
             for s in sessoes[-60:]
         )
         analises_individuais = "\n\n".join(
@@ -220,6 +223,10 @@ ANÁLISES GLOBAIS ANTERIORES (usa apenas para comparar evolução e corrigir con
                 f"sono {recuperacao.get('sono_horas', 'N/A')} h | "
                 f"recuperação {recuperacao.get('recuperacao', 'N/A')}/10 | "
                 f"FC repouso {recuperacao.get('fc_repouso', 'N/A')}"
+                f" | wellness {recuperacao.get('origem', 'N/A')}"
+                f" | HRV {recuperacao.get('hrv', 'N/A')}"
+                f" | qualidade sono {recuperacao.get('qualidade_sono', 'N/A')}"
+                f" | fadiga {recuperacao.get('fadiga', 'N/A')}"
             )
         anteriores = "\n".join(
             item.get("analise", "") for item in (analises_anteriores or [])[-2:]

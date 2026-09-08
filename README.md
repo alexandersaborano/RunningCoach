@@ -21,6 +21,15 @@ assume que essas zonas são calculadas por `%HRR`; as zonas Karvonen são
 apresentadas separadamente. O atleta pode selecionar explicitamente o perfil
 Intervals.icu ou o perfil local `%HRR (Karvonen)`, mantendo ambos guardados.
 
+### Wellness e recuperação
+
+Ao iniciar, a app consulta os últimos 30 dias em
+`GET /api/v1/athlete/{athlete_id}/wellness`. Os valores válidos são mesclados em
+`data/recuperacao_atleta.json` com `origem=intervals_icu` e
+`sincronizado_em`. Quando existe um registo manual para a mesma data, os
+valores sincronizados substituem-no; a tabela de recuperação mostra a origem e
+a data.
+
 ## Executar localmente
 
 ```powershell
