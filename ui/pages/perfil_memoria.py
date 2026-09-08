@@ -42,14 +42,15 @@ if wellness:
         colunas = st.columns(4)
         valores = [
             ("Sono", ultimo.get("sono_horas"), "h"),
-            ("Recuperação", ultimo.get("recuperacao"), "/10"),
-            ("FC repouso", ultimo.get("fc_repouso"), " bpm"),
+            ("Rec", ultimo.get("recuperacao"), "/10"),
+            ("FCR", ultimo.get("fc_repouso"), " bpm"),
             ("HRV", ultimo.get("hrv"), " ms"),
         ]
         for idx, (label, valor, suffix) in enumerate(valores):
             if valor is None:
                 continue
-            colunas[idx % 4].metric(label, f"{valor}{suffix}")
+            formatado = f"{float(valor):.1f}{suffix}" if label == "Sono" else f"{float(valor):.0f}{suffix}"
+            colunas[idx % 4].metric(label, formatado)
         st.caption(
             f"Origem: {ultimo.get('origem', 'manual')} · "
             f"sincronizado {ultimo.get('sincronizado_em', 'manualmente')}"

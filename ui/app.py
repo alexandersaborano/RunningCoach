@@ -61,29 +61,25 @@ fc_repouso_atual = int(
     recuperacao_guardada.get("fc_repouso", (perfil or {}).get("resting_hr") or 0)
 )
 if recuperacao_guardada:
-    origem = recuperacao_guardada.get("origem", "manual")
-    sincronizado_em = recuperacao_guardada.get("sincronizado_em")
-    st.sidebar.caption(
-        f"Wellness: {origem}"
-        + (f" · sincronizado {sincronizado_em}" if sincronizado_em else "")
-    )
-    with st.sidebar.expander("📊 Wellness do dia"):
-        for label, chave, formato in (
-            ("Sono", "sono_horas", "{:.1f} h"),
-            ("Recuperação", "recuperacao", "{:.0f}/10"),
-            ("FC repouso", "fc_repouso", "{:.0f} bpm"),
-            ("HRV", "hrv", "{:.0f} ms"),
-            ("Stress", "stress", "{:.0f}"),
-            ("Fadiga", "fadiga", "{:.0f}"),
-        ):
-            valor = recuperacao_guardada.get(chave)
-            if valor is None or valor == "":
-                continue
-            try:
-                valor_fmt = formato.format(float(valor))
-            except (TypeError, ValueError):
-                valor_fmt = str(valor)
-            st.write(f"**{label}:** {valor_fmt}")
+origem = recuperacao_guardada.get("origem", "manual")
+sincronizado_em = recuperacao_guardada.get("sincronizado_em")
+with st.sidebar.container():
+    st.caption(f"Wellness: {origem}" + (f" · {sincronizado_em}" if sincronizado_em else ""))
+    metric_cols = st.columns(4)
+    valores = [
+        ("Sono", recuperacao_guardada.get("sono_horas"), "h"),
+        ("Rec", recuperacao_guardada.get("recuperacao"), "/10"),
+        ("FCR", recuperacao_guardada.get("fc_repouso"), " bpm"),
+        ("HRV", recuperacao_guardada.get("hrv"), " ms"),
+    ]
+    for index, (label, valor, suffix) in enumerate(valores):
+        if valor is None:
+            continue
+        try:
+            texto = f"{float(valor):.1f}{suffix}" if label == "Sono" else f"{float(valor):.0f}{suffix}"
+        except (TypeError, ValueError):
+            texto = f"{valor}{suffix}"
+        metric_cols[index].metric(label, texto)
 
 if perfil:
     st.sidebar.success("Zonas de FC Carregadas")
@@ -96,7 +92,7 @@ if perfil:
             st.write(f"**Zona {idx}:** {z} bpm")
     with st.sidebar.expander("🩺 Wellness e recuperação"):
         sono_horas = st.number_input(
-            "Sono na última noite (horas)",
+            "Sono (h)",
             min_value=0.0,
             max_value=24.0,
             value=st.session_state.get("sono_horas", 8.0),
@@ -104,14 +100,14 @@ if perfil:
             key="sono_horas",
         )
         recuperacao = st.slider(
-            "Recuperação percebida (1-10)",
+            "Recuperação",
             min_value=1,
             max_value=10,
             value=st.session_state.get("recuperacao", 7),
             key="recuperacao",
         )
         fc_repouso_atual = st.number_input(
-            "FC de repouso atual (bpm)",
+            "FC repouso (bpm)",
             min_value=0,
             max_value=250,
             value=int(perfil.get("resting_hr") or 0),
@@ -126,7 +122,7 @@ if perfil:
             step=1,
             key="hrv_atual",
         )
-        if st.button("💾 Guardar wellness de hoje", key="guardar_recuperacao"):
+        if st.button("💾 Guardar hoje", key="guardar_recuperacao"):
             memory.guardar_recuperacao(
                 data_recuperacao,
                 sono_horas,
