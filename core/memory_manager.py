@@ -195,7 +195,7 @@ class MemoryManager:
             json.dump(dados, ficheiro, indent=4, ensure_ascii=False)
 
     def sincronizar_bem_estar(self, registos: list[dict]) -> int:
-        """Mescla wellness remoto, substituindo os valores da mesma data."""
+        """Mescla wellness remoto do Intervals.icu."""
         from core.data_validation import validate_wellness_records
 
         registos = validate_wellness_records(registos)
@@ -204,7 +204,9 @@ class MemoryManager:
         guardados = 0
         for remoto in registos:
             data = str(remoto["data"])[:10]
-            anterior = dict(remoto)
+            existente = dados.get(data)
+            anterior = dict(existente) if isinstance(existente, dict) else {}
+            anterior.update(remoto)
             anterior["data"] = data
             anterior["origem"] = "intervals_icu"
             anterior["sincronizado_em"] = sincronizado_em

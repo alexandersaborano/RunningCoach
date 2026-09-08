@@ -1,4 +1,5 @@
 import sys
+from datetime import date, timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -29,6 +30,25 @@ cabecalho(
     "Atleta AI Coach · Identidade",
 )
 
+if client.api_key and str(client.athlete_id) != "0":
+    atleta_url = f"https://intervals.icu/athlete/{client.athlete_id}"
+    col_links = st.columns([1, 1, 2])
+    with col_links[0]:
+        st.link_button("🌐 Abrir no Intervals.icu", atleta_url, use_container_width=True)
+    with col_links[1]:
+        if st.button("🔄 Sincronizar Tudo", use_container_width=True):
+            with st.spinner("A sincronizar dados..."):
+                perfil_atualizado = client.obter_perfil_e_zonas()
+                if perfil_atualizado:
+                    st.session_state["perfil_atleta"] = perfil_atualizado
+                wellness_inicio = (date.today() - timedelta(days=30)).isoformat()
+                wellness_fim = date.today().isoformat()
+                wellness_remoto = client.obter_bem_estar(wellness_inicio, wellness_fim)
+                if wellness_remoto:
+                    memory.sincronizar_bem_estar(wellness_remoto)
+                st.success("Dados sincronizados com o Intervals.icu!")
+                st.rerun()
+
 wellness = memory.carregar_recuperacao()
 if wellness:
     registros = sorted(
@@ -38,23 +58,20 @@ if wellness:
     )
     ultimo = registros[0] if registros else {}
     if ultimo:
-        st.subheader("Wellness recente")
-        colunas = st.columns(4)
-        valores = [
-            ("Sono", ultimo.get("sono_horas"), "h"),
-            ("Rec", ultimo.get("recuperacao"), "/10"),
-            ("FCR", ultimo.get("fc_repouso"), " bpm"),
-            ("HRV", ultimo.get("hrv"), " ms"),
-        ]
-        for idx, (label, valor, suffix) in enumerate(valores):
-            if valor is None:
-                continue
-            formatado = f"{float(valor):.1f}{suffix}" if label == "Sono" else f"{float(valor):.0f}{suffix}"
-            colunas[idx % 4].metric(label, formatado)
+        st.subheader("🩺 Wellness sincronizado")
+        data_reg = ultimo.get("data", "")
+        sinc_em = ultimo.get("sincronizado_em", "")
         st.caption(
-            f"Origem: {ultimo.get('origem', 'manual')} · "
-            f"sincronizado {ultimo.get('sincronizado_em', 'manualmente')}"
+            f"Último registo: **{data_reg}**"
+            + (f" · Sincronizado: {sinc_em[:16].replace('T', ' ')}" if sinc_em else "")
         )
+        colunas = st.columns(4)
+        colunas[0].metric("Sono", f"{float(ultimo.get('sono_horas', 0) or 0):.1f} h")
+        colunas[1].metric("Recuperação", f"{float(ultimo.get('recuperacao', 0) or 0):.0f}/10")
+        colunas[2].metric("FC Repouso", f"{float(ultimo.get('fc_repouso', 0) or 0):.0f} bpm")
+        hrv_val = ultimo.get("hrv")
+        colunas[3].metric("HRV (SDNN/rMSSD)", f"{float(hrv_val):.0f} ms" if hrv_val is not None else "--")
+
 
 perfil = client.obter_perfil_e_zonas()
 if "perfil_atleta" not in st.session_state:

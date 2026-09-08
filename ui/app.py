@@ -39,15 +39,6 @@ coach = AICoach(memory_manager=memory)
 if not coach.disponivel:
     st.warning(f"Análise AI indisponível: {coach.config_error}")
 
-if "wellness_sync_done" not in st.session_state:
-    if client.api_key and str(client.athlete_id) != "0":
-        wellness_inicio = (date.today() - timedelta(days=30)).isoformat()
-        wellness_fim = date.today().isoformat()
-        wellness = client.obter_bem_estar(wellness_inicio, wellness_fim)
-        if wellness:
-            memory.sincronizar_bem_estar(wellness)
-    st.session_state["wellness_sync_done"] = True
-
 # ==============================================================================
 # BARRA LATERAL (SIDEBAR)
 # ==============================================================================
@@ -72,26 +63,38 @@ recuperacao = int(recuperacao_guardada.get("recuperacao", 7))
 fc_repouso_atual = int(
     recuperacao_guardada.get("fc_repouso", (perfil or {}).get("resting_hr") or 0)
 )
+
+if client.api_key and str(client.athlete_id) != "0":
+    atleta_url = f"https://intervals.icu/athlete/{client.athlete_id}"
+    colunas_sync = st.sidebar.columns(2)
+    with colunas_sync[0]:
+        st.link_button("🌐 Intervals", atleta_url, use_container_width=True)
+    with colunas_sync[1]:
+        if st.button("🔄 Refresh", use_container_width=True):
+            with st.spinner("A sincronizar..."):
+                wellness_inicio = (date.today() - timedelta(days=30)).isoformat()
+                wellness_fim = date.today().isoformat()
+                wellness = client.obter_bem_estar(wellness_inicio, wellness_fim)
+                if wellness:
+                    memory.sincronizar_bem_estar(wellness)
+                    st.rerun()
+
 if recuperacao_guardada:
-    origem = recuperacao_guardada.get("origem", "manual")
-    sincronizado_em = recuperacao_guardada.get("sincronizado_em")
-    with st.sidebar.container():
-        st.caption(f"Wellness: {origem}" + (f" · {sincronizado_em}" if sincronizado_em else ""))
-        metric_cols = st.columns(4)
-        valores = [
-            ("Sono", recuperacao_guardada.get("sono_horas"), "h"),
-            ("Rec", recuperacao_guardada.get("recuperacao"), "/10"),
-            ("FCR", recuperacao_guardada.get("fc_repouso"), " bpm"),
-            ("HRV", recuperacao_guardada.get("hrv"), " ms"),
-        ]
-        for index, (label, valor, suffix) in enumerate(valores):
-            if valor is None:
-                continue
-            try:
-                texto = f"{float(valor):.1f}{suffix}" if label == "Sono" else f"{float(valor):.0f}{suffix}"
-            except (TypeError, ValueError):
-                texto = f"{valor}{suffix}"
-            metric_cols[index].metric(label, texto)
+    data_reg = recuperacao_guardada.get("data", "")
+    sincronizado_em = recuperacao_guardada.get("sincronizado_em", "")
+    with st.sidebar.expander("🩺 Wellness Sincronizado", expanded=True):
+        if data_reg:
+            st.caption(f"📅 Data: **{data_reg}**")
+        col_w1, col_w2 = st.columns(2)
+        with col_w1:
+            st.metric("Sono", f"{float(recuperacao_guardada.get('sono_horas', 0) or 0):.1f} h")
+            st.metric("FC Rep.", f"{float(recuperacao_guardada.get('fc_repouso', 0) or 0):.0f} bpm")
+        with col_w2:
+            st.metric("Recup.", f"{float(recuperacao_guardada.get('recuperacao', 0) or 0):.0f}/10")
+            hrv_val = recuperacao_guardada.get("hrv")
+            st.metric("HRV", f"{float(hrv_val):.0f} ms" if hrv_val is not None else "--")
+        if sincronizado_em:
+            st.caption(f"Sincronizado: {sincronizado_em[:16].replace('T', ' ')}")
 
 if perfil:
     st.sidebar.success("Zonas de FC Carregadas")
@@ -102,48 +105,6 @@ if perfil:
     with st.sidebar.expander("Ver Limites de Zonas"):
         for idx, z in enumerate(perfil.get("zonas_hr", []), 1):
             st.write(f"**Zona {idx}:** {z} bpm")
-    with st.sidebar.expander("🩺 Wellness e recuperação"):
-        sono_horas = st.number_input(
-            "Sono (h)",
-            min_value=0.0,
-            max_value=24.0,
-            value=recuperacao_guardada.get("sono_horas", 8.0),
-            step=0.5,
-            key="sono_horas",
-        )
-        recuperacao = st.slider(
-            "Recuperação",
-            min_value=1,
-            max_value=10,
-            value=int(recuperacao_guardada.get("recuperacao", 7)),
-            key="recuperacao",
-        )
-        fc_repouso_atual = st.number_input(
-            "FC repouso (bpm)",
-            min_value=0,
-            max_value=250,
-            value=int(recuperacao_guardada.get("fc_repouso", perfil.get("resting_hr") or 0)),
-            step=1,
-            key="fc_repouso_atual",
-        )
-        hrv_atual = st.number_input(
-            "HRV (ms)",
-            min_value=0,
-            max_value=200,
-            value=int(recuperacao_guardada.get("hrv", 0) or 0),
-            step=1,
-            key="hrv_atual",
-        )
-        if st.button("💾 Guardar hoje", key="guardar_recuperacao"):
-            memory.guardar_recuperacao(
-                data_recuperacao,
-                sono_horas,
-                recuperacao,
-                fc_repouso_atual,
-                hrv=hrv_atual,
-                origem="manual",
-            )
-            st.success("Wellness guardado.")
 else:
     st.sidebar.error("Zonas de FC não detetadas no Intervals.icu")
 
