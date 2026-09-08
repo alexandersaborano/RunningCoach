@@ -61,25 +61,25 @@ fc_repouso_atual = int(
     recuperacao_guardada.get("fc_repouso", (perfil or {}).get("resting_hr") or 0)
 )
 if recuperacao_guardada:
-origem = recuperacao_guardada.get("origem", "manual")
-sincronizado_em = recuperacao_guardada.get("sincronizado_em")
-with st.sidebar.container():
-    st.caption(f"Wellness: {origem}" + (f" · {sincronizado_em}" if sincronizado_em else ""))
-    metric_cols = st.columns(4)
-    valores = [
-        ("Sono", recuperacao_guardada.get("sono_horas"), "h"),
-        ("Rec", recuperacao_guardada.get("recuperacao"), "/10"),
-        ("FCR", recuperacao_guardada.get("fc_repouso"), " bpm"),
-        ("HRV", recuperacao_guardada.get("hrv"), " ms"),
-    ]
-    for index, (label, valor, suffix) in enumerate(valores):
-        if valor is None:
-            continue
-        try:
-            texto = f"{float(valor):.1f}{suffix}" if label == "Sono" else f"{float(valor):.0f}{suffix}"
-        except (TypeError, ValueError):
-            texto = f"{valor}{suffix}"
-        metric_cols[index].metric(label, texto)
+    origem = recuperacao_guardada.get("origem", "manual")
+    sincronizado_em = recuperacao_guardada.get("sincronizado_em")
+    with st.sidebar.container():
+        st.caption(f"Wellness: {origem}" + (f" · {sincronizado_em}" if sincronizado_em else ""))
+        metric_cols = st.columns(4)
+        valores = [
+            ("Sono", recuperacao_guardada.get("sono_horas"), "h"),
+            ("Rec", recuperacao_guardada.get("recuperacao"), "/10"),
+            ("FCR", recuperacao_guardada.get("fc_repouso"), " bpm"),
+            ("HRV", recuperacao_guardada.get("hrv"), " ms"),
+        ]
+        for index, (label, valor, suffix) in enumerate(valores):
+            if valor is None:
+                continue
+            try:
+                texto = f"{float(valor):.1f}{suffix}" if label == "Sono" else f"{float(valor):.0f}{suffix}"
+            except (TypeError, ValueError):
+                texto = f"{valor}{suffix}"
+            metric_cols[index].metric(label, texto)
 
 if perfil:
     st.sidebar.success("Zonas de FC Carregadas")
