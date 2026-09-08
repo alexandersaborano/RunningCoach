@@ -12,6 +12,7 @@ import streamlit as st
 
 from core.intervals_client import IntervalsClient
 from core.heart_rate_zones import calcular_zonas_hrr
+from core.memory_manager import MemoryManager
 from ui.theme import aplicar_tema, cabecalho, navegacao
 
 
@@ -20,12 +21,39 @@ aplicar_tema()
 navegacao()
 
 client = IntervalsClient()
+memory = MemoryManager()
 
 cabecalho(
     "Perfil do atleta",
     "Uma visão completa das métricas, objetivos e contexto que orientam o treinador.",
     "Atleta AI Coach · Identidade",
 )
+
+wellness = memory.carregar_recuperacao()
+if wellness:
+    registros = sorted(
+        (item for item in wellness.values() if isinstance(item, dict)),
+        key=lambda item: str(item.get("data", "")),
+        reverse=True,
+    )
+    ultimo = registros[0] if registros else {}
+    if ultimo:
+        st.subheader("Wellness recente")
+        colunas = st.columns(4)
+        valores = [
+            ("Sono", ultimo.get("sono_horas"), "h"),
+            ("Recuperação", ultimo.get("recuperacao"), "/10"),
+            ("FC repouso", ultimo.get("fc_repouso"), " bpm"),
+            ("HRV", ultimo.get("hrv"), " ms"),
+        ]
+        for idx, (label, valor, suffix) in enumerate(valores):
+            if valor is None:
+                continue
+            colunas[idx % 4].metric(label, f"{valor}{suffix}")
+        st.caption(
+            f"Origem: {ultimo.get('origem', 'manual')} · "
+            f"sincronizado {ultimo.get('sincronizado_em', 'manualmente')}"
+        )
 
 perfil = client.obter_perfil_e_zonas()
 if "perfil_atleta" not in st.session_state:

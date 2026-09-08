@@ -161,15 +161,34 @@ class MemoryManager:
         sono_horas: float,
         recuperacao: int,
         fc_repouso: int,
+        hrv: float = None,
+        stress: float = None,
+        fadiga: float = None,
+        origem: str = "manual",
+        sincronizado_em: str = None,
+        **extras,
     ):
-        """Guarda ou atualiza sono, recuperação percebida e FC de repouso."""
+        """Guarda ou atualiza sono, recuperação, FC de repouso e métricas wellness."""
         dados = self.carregar_recuperacao()
-        dados[data] = {
+        atual = dict(dados.get(data, {}))
+        atual.update({
             "data": data,
             "sono_horas": sono_horas,
             "recuperacao": recuperacao,
             "fc_repouso": fc_repouso,
-        }
+        })
+        if origem != "manual":
+            atual["origem"] = origem
+        if hrv is not None:
+            atual["hrv"] = hrv
+        if stress is not None:
+            atual["stress"] = stress
+        if fadiga is not None:
+            atual["fadiga"] = fadiga
+        if sincronizado_em:
+            atual["sincronizado_em"] = sincronizado_em
+        atual.update({k: v for k, v in extras.items() if v is not None})
+        dados[data] = atual
         validate_recovery(dados)
         FICHEIRO_RECUPERACAO.parent.mkdir(parents=True, exist_ok=True)
         with open(FICHEIRO_RECUPERACAO, "w", encoding="utf-8") as ficheiro:

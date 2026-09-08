@@ -67,6 +67,23 @@ if recuperacao_guardada:
         f"Wellness: {origem}"
         + (f" · sincronizado {sincronizado_em}" if sincronizado_em else "")
     )
+    with st.sidebar.expander("📊 Wellness do dia"):
+        for label, chave, formato in (
+            ("Sono", "sono_horas", "{:.1f} h"),
+            ("Recuperação", "recuperacao", "{:.0f}/10"),
+            ("FC repouso", "fc_repouso", "{:.0f} bpm"),
+            ("HRV", "hrv", "{:.0f} ms"),
+            ("Stress", "stress", "{:.0f}"),
+            ("Fadiga", "fadiga", "{:.0f}"),
+        ):
+            valor = recuperacao_guardada.get(chave)
+            if valor is None or valor == "":
+                continue
+            try:
+                valor_fmt = formato.format(float(valor))
+            except (TypeError, ValueError):
+                valor_fmt = str(valor)
+            st.write(f"**{label}:** {valor_fmt}")
 
 if perfil:
     st.sidebar.success("Zonas de FC Carregadas")
@@ -77,7 +94,7 @@ if perfil:
     with st.sidebar.expander("Ver Limites de Zonas"):
         for idx, z in enumerate(perfil.get("zonas_hr", []), 1):
             st.write(f"**Zona {idx}:** {z} bpm")
-    with st.sidebar.expander("🩺 Dados de recuperação"):
+    with st.sidebar.expander("🩺 Wellness e recuperação"):
         sono_horas = st.number_input(
             "Sono na última noite (horas)",
             min_value=0.0,
@@ -101,14 +118,24 @@ if perfil:
             step=1,
             key="fc_repouso_atual",
         )
-        if st.button("💾 Guardar recuperação de hoje", key="guardar_recuperacao"):
+        hrv_atual = st.number_input(
+            "HRV (ms)",
+            min_value=0,
+            max_value=200,
+            value=int(recuperacao_guardada.get("hrv", 0) or 0),
+            step=1,
+            key="hrv_atual",
+        )
+        if st.button("💾 Guardar wellness de hoje", key="guardar_recuperacao"):
             memory.guardar_recuperacao(
                 data_recuperacao,
                 sono_horas,
                 recuperacao,
                 fc_repouso_atual,
+                hrv=hrv_atual,
+                origem="manual",
             )
-            st.success("Dados de recuperação guardados.")
+            st.success("Wellness guardado.")
 else:
     st.sidebar.error("Zonas de FC não detetadas no Intervals.icu")
 
