@@ -54,7 +54,19 @@ if "wellness_sync_done" not in st.session_state:
 st.sidebar.subheader("⚙️ Estado atual")
 perfil = client.obter_perfil_e_zonas()
 data_recuperacao = date.today().isoformat()
-recuperacao_guardada = memory.carregar_recuperacao(data_recuperacao)
+recuperacao_todos = memory.carregar_recuperacao()
+recuperacao_guardada = recuperacao_todos.get(data_recuperacao) or {}
+if not recuperacao_guardada:
+    registros = [
+        item for item in recuperacao_todos.values()
+        if isinstance(item, dict)
+    ]
+    if registros:
+        recuperacao_guardada = max(
+            registros,
+            key=lambda item: str(item.get("data", "")),
+        )
+
 sono_horas = float(recuperacao_guardada.get("sono_horas", 8.0))
 recuperacao = int(recuperacao_guardada.get("recuperacao", 7))
 fc_repouso_atual = int(
@@ -95,7 +107,7 @@ if perfil:
             "Sono (h)",
             min_value=0.0,
             max_value=24.0,
-            value=st.session_state.get("sono_horas", 8.0),
+            value=recuperacao_guardada.get("sono_horas", 8.0),
             step=0.5,
             key="sono_horas",
         )
@@ -103,14 +115,14 @@ if perfil:
             "Recuperação",
             min_value=1,
             max_value=10,
-            value=st.session_state.get("recuperacao", 7),
+            value=int(recuperacao_guardada.get("recuperacao", 7)),
             key="recuperacao",
         )
         fc_repouso_atual = st.number_input(
             "FC repouso (bpm)",
             min_value=0,
             max_value=250,
-            value=int(perfil.get("resting_hr") or 0),
+            value=int(recuperacao_guardada.get("fc_repouso", perfil.get("resting_hr") or 0)),
             step=1,
             key="fc_repouso_atual",
         )
